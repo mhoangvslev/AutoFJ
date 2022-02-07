@@ -1,11 +1,10 @@
 version: '3'
 services:
-  jupyter-notebook:
+  jupyter-notebook-gpu:
     container_name: autofj-jupyter
-    network_mode: "host"
-    build: 
-      dockerfile: docker/jupyter.Dockerfile
-      context: .
+    image: "minhhoangdang/colab-backend"
+    ports:
+      - "8080:8080"
     volumes:
       - "./:/content/"
     deploy:
@@ -21,4 +20,16 @@ services:
       - /dev/nvidia-uvm:/dev/nvidia-uvm
       - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
     #command: nvidia-smi
+    entrypoint: 'jupyter notebook --allow-root --NotebookApp.allow_origin=https://colab.research.google.com --port=8080 --NotebookApp.port_retries=0'
+  
+  jupyter-notebook-cpu:
+    container_name: autofj-jupyter
+    # build: 
+    #   dockerfile: docker/jupyter.Dockerfile
+    #   context: .
+    image: "minhhoangdang/colab-backend:latest"
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./data/:/content/"    
     entrypoint: 'jupyter notebook --allow-root --NotebookApp.allow_origin=https://colab.research.google.com --port=8080 --NotebookApp.port_retries=0'

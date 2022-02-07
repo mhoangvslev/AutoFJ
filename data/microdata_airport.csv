@@ -1,0 +1,454 @@
+id,nom,iata,icao
+m1,Nadi International (Nadi) (NAN),NAN,NFFN
+m2,Zakynthos lufthavn (ZTH), ZTH,LGZA
+m3,Eleftherios Venizelos (Athens) (SPJ),SPJ,LGSP
+m4,Sveg (Sveg) (EVG),EVG,ESND
+m5,Kerch (Kerch) (KHC),KHC,UKFK
+m6,Adelaide International Airport (Adelaide) (ADL),ADL,YPAD
+m7,Sidi Ifni (Sidi Ifni) (SII),SII,GMMF
+m8,Drietabbetje (Drietabbetje) (DRJ),DRJ,SMDA
+m9, Yuzhno-Kurilsk Mendeleyevo,DEE,UHSM
+m10,"Bella Coola (Bella Coola, BC) (QBC)",QBC,CYBD
+m11,Schwechat International (Vienna) (VIE),VIE,LOWW
+m12,Aktau,SCO,UATE
+m13,Oudomxai (Oudomxay) (ODY),ODY,VLOS
+m14,Sao Tome International,TMS,FPST
+m15,Puka Puka (Puka Puka) (PKP),PKP,NTGP
+m16,Polgolla Reservoir (Katugastota) (KDZ),KDZ,TKPK
+m17,Choibalsan (Choibalsan) (COQ),COQ,ZMCD
+m18,Boke (Boke) (BKJ),BKJ,GUOK
+m19,Acadiana Regional (New Iberia) (ARA),ARA,KARA
+m20,Akulivik (Akulivik) (AKV),AKV,CYKO
+m21,Cluj-Napoca International,CLJ,LRCL
+m22,"Heydar Aliyev, Baku (Baku) (GYD)",GYD,UBBB
+m23,Uberaba (Uberaba) (UBA),UBA,SBUR
+m24,Zanderij Intl (Paramaribo) (PBM),PBM,SMJP
+m25,Abemama Atoll (Abemama Atoll) (AEA),AEA,NGTB
+m26,Athens (Athens) (AHN),AHN,KAHN
+m27,Charles de Gaulle CDG flygplats,CDG,LFPG 
+m28,Halli (Kuorevesi) (KEV),KEV,EFHA
+m29,Dirranbandi (Dirranbandi) (DRN),DRN,YDBI
+m30,Khovd (Khovd) (HVD),HVD,ZMKD
+m31,Air Base (Wiesbaden) (WIE),WIE,ETOU
+m32,London Gatwick Airport,LGW,EGKK
+m33,Pisa International Airport,PSA,LIRP
+m34,Eil (Eil) (HCM),HCM,HCME
+m35,"Chippewa Valley Regional Airport (Eau Claire, WI) (EAU)",EAU,KEAU
+m36,Nantes Airport,NTE,LFRS
+m37,Eldebba (Eldebba) (EDB),EDB,HSDB
+m38,Marrakech Aeropuerto,RAK,GMMX
+m39,Jacmel (Jacmel) (JAK),JAK,MTJA
+m40,Ilaam (Ilaam) (IIL),IIL,HCME
+m41,Sfax Thyna (Sfax) (SFA),SFA,DTTX
+m42,Beatrice (Beatrice) (BIE),BIE,KBIE
+m43,Augsburg,AGB,EDMA
+m44,Pakuba (Pakuba) (PAF),PAF,HUPA
+m45,Farewell (Farewell) (FWL),FWL,PAFW
+m46,Berkeley (Berkeley) (JBK),JBK,SIGF
+m47,Marsa Alam International,RMF,HEMA
+m48,Galegu (Dinder) (DNX),DNX,HSGG
+m49,Ankara Esenboga International,ESB,LTAC
+m50,Rivera,RVY,SURV
+m51,Hamburg Airport,HAM,EDDH
+m52,Kruunupyy (Kokkola/Pietarsaari) (KOK),KOK,EFKK
+m53,Kasaba Bay (Kasaba Bay) (ZKB),ZKB,FLKY
+m54,Asuncion Silvio Pettirossi International,ASU,SGAS
+m55,Jalalabad (Jalalabad) (JAA),JAA,OAJL
+m56,Prince George,(YXS),CYXS
+m57,"Rijeka, Lentoasema (RJK)", RJK,LDRI
+m58, Murmansk,MMK,ULMM
+m59,Vitebsk,VTB,UMII
+m60,Palmerston Airport,PMR,NZPM
+m61,Halifax Stanfield International,YHZ,CYHZ
+m62,"Marseille, Lentoasema (MRS)", MRS,LFML
+m63,Karup (Karup) (KRP),KRP,EKKA
+m64,Konawaruk (Konawaruk) (KKG),KKG,SYKZ
+m65,Brisbane,BNE,YBBN
+m66,Kisumu (Kisumu) (KIS),KIS,HKKI
+m67,Alpe Adria (Klagenfurt) (KLU),KLU,LOWK
+m68,Drietabbetje (Drietabbetje) (DRJ),DRJ,SMDA
+m69,Kitakyushu,KKJ,RJFR
+m70,Wairoa (Wairoa) (WIR),WIR,NZWO
+m71,Dhahran (Dhahran) (DHA),DHA,OEDR
+m72,Aracatuba (Aracatuba) (ARU),ARU,SBAU
+m73,Brnik (Ljubljana) (LJU),LJU,LJLJ
+m74,Cluj-Napoca Aeropuerto (CLJ), CLJ,LRCL
+m75,Gunsan (Gunsan) (KUV),KUV,RKJK
+m76,Moscow Sheremetyevo Alexander S. Pushkin Intl,(SVO),UUEE
+m77,Araak (Araak) (AJK),AJK,FHAW
+m78,Homalin (Homalin) (HOX),HOX,VYHL
+m79,Dnepropetrovsk,DNK,UKDD
+m80,Alluitsup Paa (Alluitsup Paa) (LLU),LLU,BGAP
+m81,Aitutaki (Aitutaki) (AIT),AIT,NCAI
+m82,Pelaneng (Pelaneng) (PEL),PEL,FXPG
+m83,Ataturk (Istanbul) (IST),IST,LTBA
+m84,Kongiganak (Kongiganak) (KKH),KKH,PADY
+m85,Copenhagen Airport,CPH,EKCH
+m86,Aachen/Merzbruck (Aachen) (AAH),AAH,EDKA
+m87,Reykjavik Airport,RKV,BIRK
+m88,Flughafen Penang (PEN), PEN,WMKP
+m89,Durrie (Durrie) (DRR),DRR,YDRI
+m90,Cazombo (Cazombo) (CAV),CAV,FNCZ
+m91,Montego Bay Sangster International,MBJ,MKJS
+m92,Olongapo City Subic Bay International,SFS,RPLB
+m93,Osijek (Osijek) (OSI),OSI,LDOS
+m94,"Gaborone, Sir Seretse Khamas flygplats (GBE)", GBE,FBSK
+m95,Tiko (Tiko) (TKC),TKC,FKKC
+m96,Alert (Alert) (YLT),YLT,CYLT
+m97,Araxos Airport (Patras) (GPA),GPA,LGRX
+m98,Tanjung Selor (Tanjung Selor) (TJS),TJS,WALG
+m99,Kaoshiung International Airport (Kaohsiung) (KHH),KHH,RCKH
+m100,Addison Airport (Dallas) (ADS),ADS,KADS
+m101,Oslo Gardermoen Airport,OSL,ENGM
+m102,Catania Aeropuerto Fontanarossa (CTA), CTA,LICC
+m103,Biliau (Biliau) (BIJ),BIJ,KBIJ
+m104,Amman Marka lufthavn (ADJ), ADJ,OJAM
+m105,Aeroporto de Lanarca (LCA), LCA,LCLK
+m106,Constantine The Great International (Nis) (INI),INI,LYNI
+m107,Flugplatz (Wangerooge) (AGE),AGE,EDWG
+m108, Ivanovo Yuzhny,IWA,UUBI
+m109,Kandahar International,KDH,OAKN
+m110,Cardiff,CWL,EGFF
+m111, Krasnodar Pashkovsky,KRR,URKK
+m112,Abha (Abha) (AHB),AHB,OEAB
+m113,Kjaerstad (Mosjoen) (MJF),MJF,ENMS
+m114,Tureira (Tureira) (ZTA),ZTA,NTGY
+m115,Zadar (Zadar) (ZAD),ZAD,LDZD
+m116,Municipal (Drake Fld) (Fayetteville) (FYV),FYV,KFYV
+m117,Vigra (Aalesund) (AES),AES,ENAL
+m118,Josep Tarradellas El Prat,BCN,LEBL
+m119,Paulo Afonso (Paulo Afonso) (PAV),PAV,SBUF
+m120,Jimma airport,JIM,HAJM
+m121,Charleroi lufthavn (CRL), CRL,EBCI
+m122,Rousse (Rousse) (ROU),ROU,LBRS
+m123,Nikunau (Nikunau) (NIG),NIG,NGNU
+m124,San Juan (San Juan) (SJM),SJM,MDSJ
+m125,Vostochny (Vitebsk) (VTB),VTB,UMII
+m126,Antwerpen flygplats (ANR), ANR,EBAW
+m127,Vaasa,VAA,EFVA
+m128,La Gomera (San Sebas De La Gomera) (GMZ),GMZ,GCGM
+m129,Karasburg (Karasburg) (KAS),KAS,FYKB
+m130,STRIGINO,(GOJ),UWGG
+m131,Utica NNY Rail (Utica) (ZUA),ZUA,VGZR
+m132,Gorakhpur (Gorakhpur) (GOP),GOP,VEGK
+m133,Apia Faleolo International,APW,NSFA
+m134,Aeroporto de Penang (PEN), PEN,WMKP
+m135,O R Tambo International Airport,(JNB),FAOR
+m136,Totness,TOT,SMCO
+m137,Niue International,IUE,NIUE
+m138,Brunei International,BWN,WBSB
+m139,Northeast Florida Regional Airport,UST,KSGJ
+m140,Da Nang International,DAD,VVDN
+m141,Sardeh Band (Sardeh Band) (SBF),SBF,OADS
+m142,Na-San (Son-La) (SQH),SQH,VVNS
+m143,Bathurst (Bathurst) (ZBF),ZBF,CZBF
+m144,Sir Seretse Khama International (Gaborone) (GBE),GBE,FBSK
+m145,Ahmedabad Sardar Vallabhbhai Patel International,AMD,VAAH
+m146,Munich Airport,MUC,EDDM
+m147,Managua Augusto C. Sandino,MGA,MNMG
+m148,Gangaw (Gangaw) (GAW),GAW,VYGG
+m149,Aktobe,AKX,UATT
+m150,Inverell (Inverell) (IVR),IVR,YIVL
+m151,Attala County (Kosciusko) (OSX),OSX,KOSX
+m152,Bilbao Aeropuerto (BIO), BIO,LEBB
+m153,Narrabri (Narrabri) (NAA),NAA,YNBR
+m154,Butaritari (Butaritari) (BBG),BBG,NGTU
+m155,Aeropuerto de Palermo,PMO,LICJ
+m156,Ain El Bey (Constantine) (CZL),CZL,DABC
+m157,Nkayi (Nkayi) (NKY),NKY,FCBY
+m158,Marsa Alam Intl (Marsa Alam) (RMF),RMF,HEMA
+m159,Golmud (Golmud) (GOQ),GOQ,ZLGM
+m160,Dayton International,DAY,KDAY
+m161,Denver Intl,DEN,KDEN
+m162,Chios Aeropuerto (JKH), JKH,LGHI
+m163,Santorini Aeropuerto (JTR), JTR,LGSR
+m164,108 Mile Ranch (108 Mile Ranch) (ZMH),ZMH,CZML
+m165,Kagau (Kagau) (KGE),KGE,AGKG
+m166,Cork Airport (ORK), ORK,EICK
+m167,Tarabo (Tarabo) (TBQ),TBQ,KFOE
+m168,Koszalin (Koszalin) (OSZ),OSZ,EPKO
+m169,Aswan International,ASW,HESN
+m170,Qui Nhon (Qui Nhon) (UIH),UIH,VVPC
+m171,Baucau Cakung,BCH,WPEC
+m172,Hesa (Hesa) (IFH),IFH,HHAS
+m173,Alberto Lleras Camargo (Sogamoso) (SOX),SOX,SKSO
+m174,Amahai (Amahai) (AHI),AHI,WAPA
+m175,Zadar lufthavn (ZAD), ZAD,LDZD
+m176,"Kalamata International Airport ""Captain Vassilis Constantakopoulos""",KLX,LGKL
+m177,Phung-Duc (Banmethuot) (BMV),BMV,VVBM
+m178,Aghajari (Aghajari) (AKW),AKW,PAKW
+m179,Gold Coast Airport,OOL,YBCG
+m180,Portela (Lisbon) (LIS),LIS,LPPT
+m181,Lutsk (Lutsk) (UCK),UCK,UKLC
+m182,Jackson Hole (Jackson) (JAC),JAC,KJAC
+m183,Joensuu (Joensuu) (JOE),JOE,EFJO
+m184,Belgrade Airport (BEG), BEG,LYBE
+m185,Aeropuerto Internacional Philip S. W. Goldson,BZE,MZBZ
+m186,Stockholm Bromma Airport,BMA,ESSB
+m187,Cagliari-Elmas,CAG,LIEE
+m188,St Pierre dela Reunion (St Pierre dela Reunion) (ZSE),ZSE,FMEP
+m189,Rivera (Rivera) (RVY),RVY,SURV
+m190,Fertilia (Alghero) (AHO),AHO,LIEA
+m191,Wadi Ad Dawasir (Wadi Ad Dawasir) (WAE),WAE,OEWD
+m192,Atlantic City Intl (Atlantic City) (ACY),ACY,KACY
+m193,Monastiras lidosta (MIR), MIR,DTMB
+m194,Kasungu (Kasungu) (KBQ),KBQ,FWKG
+m195,Seychelles International Airport (Mahe Island) (SEZ),SEZ,FSIA
+m196,Mocimboa Praia (Mocimboa Praia) (MZB),MZB,FQMP
+m197,Mandalay International (Mandalay) (MDL),MDL,VYMD
+m198,Dama (Bua) (BVF),BVF,NFNU
+m199,Bringeland (Forde) (FDE),FDE,ENBL
+m200,Ancona's International Airport,AOI,LIPY
+m201,Catania-Fontanarossas flygplats (CTA), CTA,LICC
+m202,Bangkok International,BKK,VTBS
+m203,Dov flygplats,SDV,LLSD
+m204,Moi International (Mombasa) (MBA),MBA,HKMO
+m205,Wiluna (Wiluna) (WUN),WUN,YWLU
+m206,Van Service (Breckenridge) (QKB),QKB,KQKB
+m207,Phalaborwa airport,PHW,FAPH
+m208,Kabala (Kabala) (KBA),KBA,GFKB
+m209,Bayankhongor (Bayankhongor) (BYN),BYN,ZMBH
+m210,Lake County (Lakeview) (LKV),LKV,KLKV
+m211,Amausi (Lucknow) (LKO),LKO,VILK
+m212,Ein Yahav (Ein Yahav) (EIY),EIY,LLEY
+m213,Flughafen Biarritz (BIQ), BIQ,LFBZ
+m214,Municipal (Perry) (PRO),PRO,KPRO
+m215,Amman Marka lufthavn (ADJ), ADJ,OJAM
+m216,Naha,OKA,ROAH
+m217,Charles de Gaulle Airport,CDG,LFPG
+m218,Corrado Gex (Aosta) (AOT),AOT,LIMW
+m219,Aurukun Mission (Aurukun Mission) (AUU),AUU,YAUR
+m220,Kahramanmaras (Kahramanmaras) (KCM),KCM,VOCI
+m221,Hingurakgoda (Hingurakgoda) (HIM),HIM,VTPH
+m222,Aeropuerto Internacional de La Romana,LRM,MDPC
+m223,Braganca (Braganca) (BGC),BGC,LPBG
+m224,Kauhava (Kauhava) (KAU),KAU,EFKA
+m225,Camba Punta (Corrientes) (CNQ),CNQ,SARC
+m226,Air Terminal (Hayward) (HWD),HWD,KHWD
+m227,Rarotonga International,RAR,NCRG
+m228,Owando (Owando) (FTX),FTX,FCOO
+m229,"Harstad Evenes, Lentoasema (EVE)", EVE,ENEV
+m230,Altenrhein (Altenrhein) (ACH),ACH,LSZR
+m231,Likoma (Likoma Island) (LIX),LIX,FWLK
+m232,Araak (Araak) (AJK),AJK,FHAW
+m233,Leknes (Leknes) (LKN),LKN,ENLK
+m234,Canberra,CBR,YSCB
+m235,Jahrom (Jahrom) (JAR),JAR,OISJ
+m236,Chacalluta (Arica) (ARI),ARI,SCAR
+m237,Beijing Nanyuan,NAY,ZBNY
+m238,Misima Island (Misima Island) (MIS),MIS,AYMS
+m239,Djupivogur (Djupivogur) (DJU),DJU,BIDV
+m240,Belep Island (Belep Island) (BMY),BMY,NWWC
+m241,"Preveza, Aktions flygplats (PVK)", PVK,LGPZ
+m242,Smara (Smara) (SMW),SMW,GMMA
+m243,Pitsburgas lidosta (PIT), PIT,KPIT
+m244,Hurghada (Hurghada) (HRG),HRG,HEGN
+m245,Augusto Severo (Natal) (NAT),NAT,SBNT
+m246,Kikwit (Kikwit) (KKW),KKW,FZCA
+m247,Am Timan (Am Timan) (AMC),AMC,FTTN
+m248,Essaouira (Essaouira) (ESU),ESU,GMMI
+m249,Apolo (Apolo) (APB),APB,SLAP
+m250,Brisbane Intl,(BNE),YBBN
+m251,Tocumen International (Panama City) (PTY),PTY,MPTO
+m252,Roskilde Airport (Copenhagen) (RKE),RKE,EKRK
+m253,Saint Francois,SFC,TFFC
+m254,Wuxi (Wuxi) (WUX),WUX,ZSWX
+m255,Olomouc (Olomouc) (OLO),OLO,LKOL
+m256,Poipet (Poipet) (HPP),HPP,VYPA
+m257,Cane Field (Roseau) (DCF),DCF,TDCF
+m258,Port Allen (Hanapepe) (PAK),PAK,KPAK
+m259,Biangabip (Biangabip) (BPK),BPK,KBPK
+m260,Gisenyi (Gisenyi) (GYI),GYI,HRYG
+m261,Bamrauli (Allahabad) (IXD),IXD,VIAL
+m262,Breiddalsvik (Breiddalsvik) (BXV),BXV,BIBV
+m263,St. Barthelemy - Gustaf I I I,(SBH),TFFJ
+m264,Tan Tan (Tan Tan) (TTA),TTA,GMAT
+m265,Bykovo airport,BKA,UUBB
+m266,Carlisle (Carlisle) (CAX),CAX,EGNC
+m267,Valladolid Aeropuerto (VLL), VLL,LEVD
+m268,Eleftherios Venizelos (Athens) (ATH),ATH,LGAV
+m269,New York JFK Intl,JFK,KJFK
+m270,Brasilia Presidente Juscelino Kubitschek,BSB,SBBR
+m271,Mustique,MQS,TVSM
+m272,Canouan Island (Canouan Island) (CIW),CIW,TVSC
+m273,Marseille lufthavn (MRS), MRS,LFML
+m274,Gafsa (Gafsa) (GAF),GAF,DTTF
+m275,Tontouta (Noumea) (NOU),NOU,NWWW
+m276,Guayaquil Jose Joaquin de Olmedo International,GYE,SEGY
+m277,Montgomery County (Gaithersburg) (GAI),GAI,KGAI
+m278,Noumea La Tontouta International,NOU,NWWW
+m279,Blonduos (Blonduos) (BLO),BLO,BIBL
+m280,Djibouti Ambouli International,JIB,HDAM
+m281,Mustique (Mustique Island) (MQS),MQS,TVSM
+m282,Dobo Airport (Dobo) (DOB),DOB,WAPD
+m283,Karlovy Vary (Karlovy Vary) (KLV),KLV,LKKV
+m284,Andamooka (Andamooka) (ADO),ADO,YAMK
+m285,Guang Yuan (Guang Yuan) (GYS),GYS,ZUGU
+m286,Changhai (Changhai) (CNI),CNI,ZYCH
+m287,"Penang, Lentoasema (PEN)", PEN,WMKP
+m288,Klanten Arpt (Gol) (GLL),GLL,ENUK
+m289,Babelthuap/Koror (Koror) (ROR),ROR,PTRO
+m290,Playa Samara (Playa Samara) (PLD),PLD,MRSR
+m291,St-Laurent du Maroni (St Laurent du Maroni) (LDX),LDX,SOOM
+m292,Ciampino,CIA,LIRA
+m293,Nairobi Wilson,WIL,HKNW
+m294,Kilimanjaro (Kilimanjaro) (JRO),JRO,HTKJ
+m295,Beer Sheba (Beer Sheba) (BEV),BEV,LLBS
+m296,Beaver Creek (Beaver Creek) (YXQ),YXQ,CYXQ
+m297,Balhash (Balhash) (BXH),BXH,UAAH
+m298,Ofu (Ofu) (OFU),OFU,NSAS
+m299,Bariloche Aeropuerto,BRC,SAZS
+m300,Habi (Habi) (HBD),HBD,DIAP
+m301,Kamarang (Kamarang) (KAR),KAR,SYKM
+m302,Klagenfurt,KLU,LOWK
+m303,Semipalatinsk (Semipalatinsk) (PLX),PLX,UASS
+m304,Gassim Regional Airport (Buraidah) (ELQ),ELQ,OEGS
+m305,Natitingou (Natitingou) (NAE),NAE,DBBN
+m306,Nadi lidosta (NAN),NAN,NFFN
+m307,Iwo Jima Airbase (Iwo Jima Vol) (IWO),IWO,RJAW
+m308,Lashio airport,LSH,VYLS
+m309,La Desirade (La Desirade) (DSD),DSD,TFFA
+m310,Dawadmi (Dawadmi) (DWD),DWD,OEDW
+m311,Forrest River Airport (Forrest River) (FVR),FVR,LIRV
+m312,Kzyl-Orda (Kzyl-Orda) (KZO),KZO,UAOO
+m313,Mwanza,MWZ,HTMW
+m314,Aeropuerto de Beauvais,BVA,LFOB
+m315,"Cyril E King Airport (Charlotte Amalie, St Thomas) (STT)",STT,TIST
+m316, Gorno-Altaysk,RGK,UNBG
+m317,Kodiak,ADQ,PADQ
+m318,Tozeur (Tozeur) (TOE),TOE,DTTZ
+m319,Dipolog (Dipolog) (DPL),DPL,RPMG
+m320,Montilla (Montilla) (OZU),OZU,EGXU
+m321,MOUNT SURPRISE,,YMSP
+m322, Taganrog Yuzhny,TGK,URRT
+m323,Municipal (Atlantic) (AIO),AIO,KAIO
+m324,Mariscal Sucre (Quito) (UIO),UIO,SEQU
+m325,Nantong (Nantong) (NTG),NTG,ZSNT
+m326,Miami International,MIA,KMIA
+m327,Heliport (Narsaq) (JNS),JNS,BGNS
+m328,Santa Cruz Das Flores Aeropuerto (FLW), FLW,LPFL
+m329,Jambol,JAM,
+m330,Karonga (Karonga) (KGJ),KGJ,FWKA
+m331,Guamas lidosta (GUM), GUM,PGUM
+m332,Rijeka / Fiume Aeroporto (RJK), RJK,LDRI
+m333,Nana (Star Habour) (NAZ),NAZ,OINZ
+m334,King Khalid Military (King Khalid Mil. City) (KMC),KMC,OEKK
+m335, Rostov-on-Don,ROV,URRR
+m336,Mongu (Mongu) (MNR),MNR,FLMG
+m337,Durban International (Durban) (DUR),DUR,FADN
+m338,Arviat (Arviat) (YEK),YEK,CYEK
+m339,Overberg (FAOB) (Overberg) (OVG),OVG,SBOI
+m340,Sehwen Sharif (Sehwen Sharif) (SYW),SYW,SBGR
+m341,San Andres Island (San Andres Island) (ADZ),ADZ,SKSP
+m342,Josefa Camejo (Las Piedras) (LSP),LSP,SVJC
+m343,Valladolid,VLL,LEVD
+m344,Osmani International (Sylhet) (ZYL),ZYL,VGSY
+m345,Borjhar (Gawahati) (GAU),GAU,VEGT
+m346,Adi Sumarmo (Solo City) (SOC),SOC,WARQ
+m347,Yohannes IV (Asmara) (ASM),ASM,HHAS
+m348,Parakou (Parakou) (PKO),PKO,DBBP
+m349,Bukhara,BHK,UTSB
+m350,Thumrait (Thumrait) (TTH),TTH,OOTH
+m351,Marsa Brega (Marsa Brega) (LMQ),LMQ,HLMB
+m352,Cracovia Aeropuerto (KRK), KRK,EPKK
+m353,Orly Airport,ORY,LFPO
+m354,Arandis (Arandis) (ADI),ADI,FYAR
+m355,Juba (Juba) (JUB),JUB,HSSJ
+m356,Altenrhein St. Gallen,ACH,LSZR
+m357,Bishkek Manas (Bishkek) (FRU),FRU,UAFM
+m358, Nadym,NYM,USMM
+m359,Limnos (Limnos) (LXS),LXS,LGLM
+m360,Belfast International,BFS,EGAA
+m361,Oban Airport (Oban) (OBN),OBN,EGEO
+m362,Santo Antao (Santo Antao) (NTO),NTO,GVAN
+m363,Nuernberg Airport,(NUE),EDDN
+m364,Chiang Mai International (Chiang Mai) (CNX),CNX,VTCC
+m365,Axum flygplats,AXU,HAAX
+m366,"Ngurah Rai International (Denpasar, Bali) (DPS)",DPS,WADD
+m367,Naples International Airport,NAP,LIRN
+m368,Toulouse-Blagnac flygplats (TLS), TLS,LFBO
+m369,Yotvata (Yotvata) (YOT),YOT,LLYT
+m370,Cabo Rojo (Cabo Rojo) (CBJ),CBJ,MDCR
+m371,Plaisance Sir Seewoosagur Ramgoolam International,MRU,FIMP
+m372,Buttonville Municipal (Toronto) (YKZ),YKZ,CYKZ
+m373,San Jose Airport (SJC), SJC,KSJC
+m374,Beltsy (Beltsy) (BZY),BZY,LUBL
+m375,Delhi Indira Gandhi International,DEL,VIDP
+m376,Athens International Airport,ATH,LGAV
+m377,Shark Elowainat (Shark Elowainat) (GSQ),GSQ,HEOW
+m378,Lawas airport,LWY,WBGW
+m379,Makale airport,MQX,HAMK
+m380,Paama (Paama) (PBJ),PBJ,NVSI
+m381,Cormeille En Vexin flygplats,POX,LFPT
+m382,Flughafen Berlin-Tegel,TXL,EDDT
+m383,Abel Santa Maria (Santa Clara) (SNU),SNU,MUSC
+m384,Barisal (Barisal) (BZL),BZL,VGBR
+m385,Aeropuerto de Alicante - Elche,ALC,LEAL
+m386,Agno airport,LUG,LSZA
+m387,Gwa (Gwa) (GWA),GWA,VYGW
+m388,Carmelita (Carmelita) (CMM),CMM,MGCR
+m389,Nnamdi Azikiwe International Airport (Abuja) (ABV),ABV,DNAA
+m390,Puerto Suarez (Puerto Suarez) (PSZ),PSZ,SLPS
+m391,Hidroeletrica (Itumbiara) (ITR),ITR,KITR
+m392,Jakarta Soekarno-Hatta International,CGK,WIII
+m393,Kariba (Kariba) (KAB),KAB,FVKB
+m394,Savannakhet (Savannakhet) (ZVK),ZVK,VLSK
+m395,Francistown flygplats (FRW), FRW,FBFT
+m396,Cabinda flygplats,CAB,FNCA
+m397,Keflavik (Reykjavik) (RKV),RKV,BIRK
+m398,Beaver Ruin (Atlanta) (JAO),JAO,KJAO
+m399,Phuket International (Phuket) (HKT),HKT,VTSP
+m400,Great Harbour (Great Harbour) (GHC),GHC,MYBG
+m401,Flughafen Humberside (HUY), HUY,EGNJ
+m402,Kota Koli (Kota Koli) (KLI),KLI,FZFP
+m403,Ilorin (Ilorin) (ILR),ILR,DNIL
+m404,Binaka (Gunungsitoli) (GNS),GNS,WIMB
+m405,Sao Filipe (Sao Filipe) (SFL),SFL,GVSF
+m406,Pan Yu Ferry (Pan Yu) (ZAX),ZAX,FVZK
+m407,Matacan (Salamanca) (SLM),SLM,LESA
+m408,Kaukura Atoll (Kaukura Atoll) (KKR),KKR,NTGK
+m409,Tanna (Tanna) (TAH),TAH,NVVW
+m410,Mare (Mare) (MEE),MEE,NWWR
+m411,INGLEWOOD,,YILW
+m412,Badajoz Aeropuerto (BJZ), BJZ,LEBZ
+m413,Lublin Luchthaven (LUZ), LUZ,EPLB
+m414,Mazury (Szymany) (SZY),SZY,EPSY
+m415,Suvarnabhumi International (Bangkok) (BKK),BKK,VTBS
+m416,Del Caribe International (Gen. Santiago Marino) (Porlamar) (PMV),PMV,SVMG
+m417,Aeroporto de Brownsville (BRO), BRO,KBRO
+m418,Dongola (Dongola) (DOG),DOG,HSDN
+m419,Patras lufthavn (GPA), GPA,LGRX
+m420,Dnepropetrovsk (Dnepropetrovsk) (DNK),DNK,UKDD
+m421,Capitan Vicente Almando (La Rioja) (IRJ),IRJ,SANL
+m422,Kenema (Kenema) (KEN),KEN,GFKE
+m423,Agades (Agades) (AJY),AJY,DRZA
+m424,Limpopo Valley (Tuli Block) (TLD),TLD,FBTL
+m425,Tenerife Aeropuerto Norte (TFN), TFN,GCXO
+m426,Kadena AB (Okinawa) (DNA),DNA,RODN
+m427,Mingaladon (Yangon) (RGN),RGN,VYYY
+m428,Cape Town International (Cape Town) (CPT),CPT,FACT
+m429,Makabana (Makabana) (KMK),KMK,FCPA
+m430,Northeast Florida Regional Airport,UST,KSGJ
+m431,Heliport (Akunnaaq) (QCU),QCU,SASQ
+m432,Aneityum (Aneityum) (AUY),AUY,NVVA
+m433,International (Bujumbura) (BJM),BJM,HBBA
+m434,Edimburgo Aeropuerto,EDI,EGPH
+m435,Sambailo (Koundara) (SBI),SBI,GUSB
+m436,Yaounde Airport (Yaounde) (YAO),YAO,FKKY
+m437,Donostia - San Sebastian (San Sebastian) (EAS),EAS,LESO
+m438,Corfu Ioannis Kapodistrias,CFU,LGKR
+m439,Melville Hall (Dominica) (DOM),DOM,TDPD
+m440,Anthony Lagoon (Anthony Lagoon) (AYL),AYL,YANL
+m441,Sais (Fez) (FEZ),FEZ,GMFF
+m442,Oscar Reguera (Chos Malal) (HOS),HOS,SAHC
+m443,San Ignacio De M (San Ignacio De M) (SNM),SNM,SLSM
+m444,Es Senia (Oran) (ORN),ORN,DAOO
+m445,Dabo (Dabo) (DAO),DAO,ZJYX
+m446,Ada (Ada) (ADT),ADT,KADH
+m447,Inverness,INV,EGPE
+m448,Alahsa (Alahsa) (HOF),HOF,OEAH
+m449,Singapore Changi,(SIN),WSSS
+m450,Astana (Astana) (TSE),TSE,UACC
+m451,Stung Treng (Stung Treng) (TNX),TNX,VDST
+m452,Labe (Labe) (LEK),LEK,GULB
+m453,Yoro (Yoro) (ORO),ORO,MHYR

@@ -1,0 +1,260 @@
+id,nom,iata,icao
+w1,Saint-Denis de la Réunion-Roland Garros,RUN,FMEE
+w2,Campo Grande,CGR,SBCG
+w3,Municipal João Winckler,AXE,SSXX
+w4,Bauru,BAU,SBBU
+w5,Santa Cruz Do Sul,CSU,SSSC
+w6,Hong Kong International Airport,HKG,VHHH
+w7,香港國際機場,HKG,VHHH
+w8,Internacional De Belém/val De Cans/júlio Cezar Ribeiro,BEL,SBBE
+w9,Barreiras,BRA,SNBR
+w10,Lins,LIP,SWXQ
+w11,Anápolis,APS,SWNS
+w12,Hercílio Luz,FLN,SBFL
+w13,Simon Mwansa Kapwepwe International Airport,NLA,FLSK
+w14,Cacoal,OAL,SSKW
+w15,Aripuanã,AIR,SSOU
+w16,Teles Pires Lodge,AIR,SSOU
+w17,Aeroporto Internacional De Parnaíba / Prefeito Doutor João Silva Filho,PHB,SBPB
+w18,Ângelo Ponzoni,VIA,SSVI
+w19,Diamantino,DMT,SWDM
+w20,Rubem Berta,URG,SBUG
+w21,Presidente Castro Pinto,JPA,SBJP
+w22,Regional Orlando Villas Boas,MBK,SWXM
+w23,Cangapara,FLB,SNQG
+w24,Santa Terezinha,STZ,SWST
+w25,Baltimore/Washington International Thurgood Marshall Airport,BWI,KBWI
+w26,Aéroport d'Aurillac-Tronquières,AUR,LFLW
+w27,Carauari,CAF,SWCA
+w28,Bandar Udara Internasional Supadio,PNK,WIOO
+w29,Lapangan Terbang Sungai Durian,PNK,WIOO
+w30,Pangkalan TNI AU Supadio,PNK,WIOO
+w31,Pangkalan Udara Sungai Durian,PNK,WIOO
+w32,Marechal Rondon,CGB,SBCY
+w33,Umberto Modiano,BZC,SBBZ
+w34,Umberto Modiano,BZC,SSBZ
+w35,General Leite De Castro,RVD,SWLC
+w36,São Félix Do Xingu,SXX,SNFX
+w37,Gaudêncio Machado Ramos,ALQ,SSLT
+w38,Capitão João Busse,APU,SSAP
+w39,Aeroporto Internacional de Manaus / Eduardo Gomes,MAO,SBEG
+w40,Ronald Reagan Washington National Airport,DCA,KDCA
+w41,Washington National Airport,DCA,KDCA
+w42,Maestro Wilson Fonseca,STM,SBSN
+w43,Hamburg Airport Helmut Schmidt,HAM,EDDH
+w44,Chafei Amsei (sbbt*),BAT,SNBA
+w45,Professor Eriberto Manoel Reino,SJP,SBSR
+w46,Presidente Prudente,PPB,SBDN
+w47,Eirunepé,ERN,SWEI
+w48,Erechim,ERM,SSER
+w49,Itaqui,ITQ,SSIQ
+w50,Zračna luka Dubrovnik,DBV,LDDU
+w51,Bahia - Jorge Amado,IOS,SBIL
+w52,Bluethenthal Field,ILM,KILM
+w53,New Hanover County Airport,ILM,KILM
+w54,New Hanover County International Airport,ILM,KILM
+w55,Wilmington International Airport,ILM,KILM
+w56,Macaé,MEA,SBME
+w57,Kendall-Tamiami Executive Airport,TMB,KTMB
+w58,Santana Do Araguaia,CMP,SNKE
+w59,Bauru/arealva,JTC,SBAE
+w60,Itaituba,ITB,SBIH
+w61,Aeroporto Regional do Vale do Aço,IPN,SBIP
+w62,Paulo Abdala,FBE,SSFB
+w63,Helmuth Baungartem,LOI,SSLN
+w64,Presidente Juscelino Kubitschek,BSB,SBBR
+w65,Confresa,CFO,SJHG
+w66,Pinto Martins,FOR,SBFZ
+w67,Carajás,CKS,SBCJ
+w68,Bonito,BYO,SBDB
+w69,Carlos Alberto Da Costa Neves,CFC,SBCD
+w70,Governador Jorge Teixeira De Oliveira,PVH,SBPV
+w71,Ji-paraná,JPR,SBJI
+w72,Hotel Transamérica,UNA,SBTC
+w73,Ministro Victor Konder,NVT,SBNF
+w74,ท่าอากาศยานน่านนคร,NNT,VTCN
+w75,Diamantina,DTI,SNDT
+w76,Cruzeiro Do Sul,CZS,SBCZ
+w77,Dracena,QDC,SDDR
+w78,Professor Urbano Ernesto Stumpf,SJK,SBSJ
+w79,Juvenal Loureiro Cardoso,PTO,SBPO
+w80,Lábrea,LBR,SWLB
+w81,Marechal Cunha Machado,SLZ,SBSL
+w82,Guadalupe,GDP,SNGD
+w83,São Borja,JBS,SSSB
+w84,Santos Dumont,SDU,SBRJ
+w85,Coari,CIZ,SWKO
+w86,Borba,RBB,SWBR
+w87,Hélio Wasum,SQX,SSOE
+w88,Aeroclube De Nova Iguaçu,QNV,SDNY
+w89,Fazenda Ponte Serrada,QNV,SDNY
+w90,Pouso Alegre,PPY,SNZA
+w91,Melbourne Airport,MEL,YMML
+w92,Deputado Luís Eduardo Magalhães,SSA,SBSV
+w93,Salgado Filho,POA,SBPA
+w94,Olavo Cecco Rigon,CCI,SSCK
+w95,Bom Jesus Da Lapa,LAZ,SBLP
+w96,Aeroporto Internacional do Rio de Janeiro/Galeão – Antonio Carlos Jobim,GIG,SBGL
+w97,Sílvio Name Júnior,MGF,SBMG
+w98,Alessandro Field,RIV,KRIV
+w99,March Air Force Base,RIV,KRIV
+w100,March Air Reserve Base,RIV,KRIV
+w101,March Field,RIV,KRIV
+w102,Santa Rosa,SRA,SSZR
+w103,Pimenta Bueno,PBQ,SWPM
+w104,Bartolomeu Lisandro,CAW,SBCP
+w105,Bacacheri,BFH,SBBI
+w106,Leopoldina,LEP,SNDN
+w107,Аэропорт Ульяновск-Восточный,ULY,UWLW
+w108,Paulo Afonso,PAV,SBUF
+w109,Ponta Porã,PMG,SBPP
+w110,Santa Genoveva/goiânia,GYN,SBGO
+w111,Estadual Arthur Siqueira,BJP,SBBP
+w112,Hidrelétrica de Itumbiara,ITR,SBIT
+w113,São Pedro,DOU,SSDO
+w114,Oscar Laranjeiras,CAU,SNRU
+w115,Engenheiro Gastão De Mesquita Filho,GGH,SSCT
+w116,Santo Ângelo,GEL,SBNM
+w117,Francisco Correa Da Cruz,HUW,SWHT
+w118,Parintins,PIN,SWPI
+w119,Chácara Rondoagro,ROO,SWRD
+w120,Ben Gurion International Airport,TLV,LLBG
+w121,Lod Airport,TLV,LLBG
+w122,Aéroport international Jean-Lesage de Québec,YQB,CYQB
+w123,Pampulha - Carlos Drummond De Andrade,PLU,SBBH
+w124,Barra Do Garças,BPG,SBBW
+w125,Tarauacá,TRQ,SBTK
+w126,Novo Aeródromo De Feijó,FEJ,SNOU
+w127,Fazenda Serinhaém,LVB,SSDM
+w128,Dubbo City Regional Airport,DBO,YSDU
+w129,Das Bandeirinhas,QDF,SNKF
+w130,Canela,CEL,SSCN
+w131,Xavantina,NOK,SWXV
+w132,Nelson Rodrigues Guimarães,CLV,SBCN
+w133,김포국제공항,GMP,RKSS
+w134,Tefé,TFF,SBTF
+w135,Brigadeiro Lysias Rodrigues,PMW,SBPJ
+w136,Balsas,BSS,SNBS
+w137,Jequié,JEQ,SNJK
+w138,Guanambi,GNM,SNGI
+w139,Pinheiro,PHI,SNYE
+w140,Forquilhinha/criciúma,CCM,SBCM
+w141,Zumbi Dos Palmares,MCZ,SBMO
+w142,Cachoeiro Do Itapemirim,CDI,SNKI
+w143,Prefeito Renato Moreira,IMP,SBIZ
+w144,Fonte Boa,FBA,SWOB
+w145,Francisco Lacerda Júnior,CKO,SSCP
+w146,Lauro Kurtz,PFB,SBPF
+w147,João Correa Da Rocha,MAB,SBMA
+w148,Juara Sul,JUA,SIZX
+w149,Patos De Minas,POJ,SNPD
+w150,Vila Rica,VLP,SWVC
+w151,Senador Petrônio Portella,THE,SBTE
+w152,Plácido De Castro,RBR,SBRB
+w153,Pelotas,PET,SBPK
+w154,Orlando Bezerra De Menezes,JDO,SBJU
+w155,Estadual Dario Guarita,ARU,SBAU
+w156,Itacoatiara,ITA,SBIC
+w157,མངའ་རིས་དགུན་ས་གནམ་གྲུ་ཐང༌།,NGQ,ZUAL
+w158,阿里昆莎机场,NGQ,ZUAL
+w159,Fazenda Bela Vista,AAI,SWRA
+w160,Arraias,AAI,SWRA
+w161,São Gabriel Da Cachoeira,SJL,SBUA
+w162,Blumenau,BNU,SSBL
+w163,Januária,JNA,SNJN
+w164,Valença,VAL,SNVB
+w165,Fernando De Noronha,FEN,SBFN
+w166,Altamira,ATM,SBHT
+w167,Marcelo Pires Halzhausen,AIF,SNAX
+w168,Edu Chaves,PVI,SSPI
+w169,Nanuque,NNU,SNNU
+w170,Mário Ribeiro,MOC,SBMK
+w171,Redenção,RDC,SNDC
+w172,Jataí,JTI,SWJW
+w173,Manicoré,MNX,SBMY
+w174,Los Angeles International Airport,LAX,KLAX
+w175,Mucuri,MVS,SNMU
+w176,Adams Field,LIT,KLIT
+w177,Bill and Hillary Clinton National Airport,LIT,KLIT
+w178,Barra Do Corda,BDC,SNBC
+w179,Almeirim,GGF,SNYA
+w180,Guajará-mirim,GJM,SBGM
+w181,Congonhas,CGH,SBSP
+w182,Aerodrómo Estadual De Campinas / Amarais,CPQ,SDAM
+w183,Tancredo Thomas De Faria,GPB,SBGU
+w184,Tucuruí,TUR,SBTU
+w185,Alto Parnaíba,APY,SNAI
+w186,Alberto Alcolumbre,MCP,SBMQ
+w187,Mário Pereira Lopes,QSC,SDSC
+w188,Santa Terezinha,JCB,SSJA
+w189,Ipiranga,IPG,SWII
+w190,Telêmaco Borba (sbtl*),TEC,SBTL
+w191,Regional Da Zona Da Mata,IZA,SBZM
+w192,Aeroporto Municipal Bom Futuro,LVR,SILC
+w193,Serafin Enoss Bertaso,XAP,SBCH
+w194,Francisco De Assis,JDF,SBJF
+w195,Maués,MBZ,SWMW
+w196,Ourinhos,OUS,SDOU
+w197,São Félix Do Araguaia,SXO,SWFX
+w198,Presidente João Suassuna,CPV,SBKG
+w199,Hugo Werner,QMF,SSMF
+w200,Porto Nacional,PNB,SBPN
+w201,Viracopos,VCP,SBKP
+w202,Afonso Pena,CWB,SBCT
+w203,Sorocaba,SOD,SDCO
+w204,Guararapes - Gilberto Freyre,REC,SBRF
+w205,São Lourenço,SSO,SNLO
+w206,Международный аэропорт Нижний Новгород,GOJ,UWGG
+w207,Conceição Do Araguaia,CDJ,SBAA
+w208,Santa Izabel Do Rio Negro,IRZ,SWTP
+w209,Международный аэропорт «Курумоч»,KUF,UWWW
+w210,Frank Miloye Milenkovich,MII,SBML
+w211,Mario De Almeida Franco,UBA,SBUR
+w212,Bartolomeu De Gusmão,AQA,SBAQ
+w213,Novo Progresso,NPR,SJNP
+w214,Regional Hugo Cantergiani,CXJ,SBCX
+w215,Tancredo Neves,CNF,SBCF
+w216,ঈশ্বরদী বিমানবন্দর,IRD,VGIS
+w217,Juruena,JRN,SWJU
+w218,Fazenda Mundo Novo,JRN,SWJU
+w219,Pista Aldeia Kedjêrêkrã,PDR,SJKE
+w220,Santa Maria,AJU,SBAR
+w221,Santa Maria,AJU,SISG
+w222,Aeroclube de Sergipe,AJU,SBAR
+w223,Aeroclube de Sergipe,AJU,SISG
+w224,Comandante Gustavo Kraemer,BGX,SBBG
+w225,Barcelos,BAZ,SWBC
+w226,Porto Seguro,BPS,SBPS
+w227,Franca,FRC,SIMK
+w228,Tenente Lund Pressoto,FRC,SIMK
+w229,Leite Lopes,RAO,SBRP
+w230,Eurico de Aguiar Salles,VIX,SBVT
+w231,Orlando De Carvalho,UMU,SSUM
+w232,Lages,LAJ,SBLJ
+w233,Gastão Madeira,UBT,SDUB
+w234,Canarana,CQA,SWEK
+w235,Governador José Richa,LDB,SBLO
+w236,Aeroporto Estadual De Jundiaí,QDV,SBJD
+w237,Lauro Carneiro De Loyola,JOI,SBJV
+w238,Guarapari,GUZ,SNGA
+w239,Аэропорт Ульяновск-Баратаевка,ULV,UWLL
+w240,Senador Nilo Coelho,PNZ,SBPL
+w241,Arapongas,APX,SSOG
+w242,Juína,JIA,SWJN
+w243,Governador Valadares,GVR,SBGV
+w244,Coronel Altino Machado,GVR,SBGV
+w245,Monte Dourado,MEU,SBMD
+w246,Pedro Otacílio Figueiredo,VDC,SBQV
+w247,Brigadeiro Antônio Cabral,DIQ,SNDV
+w248,Oriximiná,ORX,SNOX
+w249,Avaré-arandu,QVP,SDRR
+w250,Ten Cel Aviador César Bombonato,UDI,SBUL
+w251,Major Brigadeiro Trompowsky,VAG,SBVG
+w252,Niquelândia,NQL,SWNQ
+w253,Walter Bündchen,HRZ,SSHZ
+w254,Santa Vitória Do Palmar,CTQ,SSVP
+w255,Domingos Pignatari,VOT,SDVG
+w256,Resende,REZ,SDRS
+w257,Ijuí,IJU,SSIJ
+w258,São Lourenço Do Sul,SQY,SSRU
+w259,Picos,PCS,SNPC
