@@ -27,10 +27,11 @@ setuptools.setup(
         'ngram',
         'editdistance',
         'jellyfish',
-        'spacy',
+        'spacy[cuda112]',
         'transformers',
         'scipy',
-        'torch'
+        'torch',
+        'tqdm'
     ],
     include_package_data=True
 )

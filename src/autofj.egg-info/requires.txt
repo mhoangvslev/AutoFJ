@@ -4,7 +4,8 @@ nltk
 ngram
 editdistance
 jellyfish
-spacy
+spacy[cuda112]
 transformers
 scipy
 torch
+tqdm

@@ -8,6 +8,8 @@ import os
 from .negative_rule import NegativeRule
 import numpy as np
 
+import multiprocessing
+multiprocessing.set_start_method("spawn", force=True)
 
 class AutoFJ(object):
     """

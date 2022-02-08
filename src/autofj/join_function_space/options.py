@@ -35,7 +35,7 @@ autofj_sm = {
     "preprocess_methods":["lower", "lowerRemovePunctuationStem"],
     "tokenize_methods": ["threeGram", "splitBySpace"],
     "token_weights": ["idfWeight"],
-    "char_distance_functions": ["jaroDistance", "embed_BART-Large"],
+    "char_distance_functions": ["jaroDistance", "embedDistance"],
     "set_distance_functions": ["containCosineDistance",
                                "jaccardDistance",
                                "maxincDistance"]

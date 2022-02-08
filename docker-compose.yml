@@ -2,11 +2,11 @@ version: '3'
 services:
   jupyter-notebook-gpu:
     container_name: autofj-jupyter
-    image: "minhhoangdang/colab-backend"
-    ports:
-      - "8080:8080"
+    image: "cschranz/gpu-jupyter:v1.4_cuda-11.2_ubuntu-20.04_python-only"
     volumes:
       - "./:/content/"
+    ports:
+      - "8080:8080"
     deploy:
       resources:
         reservations:
@@ -20,16 +20,22 @@ services:
       - /dev/nvidia-uvm:/dev/nvidia-uvm
       - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
     #command: nvidia-smi
-    entrypoint: 'jupyter notebook --allow-root --NotebookApp.allow_origin=https://colab.research.google.com --port=8080 --NotebookApp.port_retries=0'
+    environment:
+      - GRANT_SUDO=yes
+      - JUPYTER_ENABLE_LAB=yes
+    command: bash -c 'pip install -q jupyter_http_over_ws && jupyter serverextension enable --py jupyter_http_over_ws && jupyter notebook --allow-root --NotebookApp.allow_origin=https://colab.research.google.com --port=8080 --NotebookApp.port_retries=0 --NotebookApp.password=""'
   
   jupyter-notebook-cpu:
     container_name: autofj-jupyter
     # build: 
     #   dockerfile: docker/jupyter.Dockerfile
     #   context: .
-    image: "minhhoangdang/colab-backend:latest"
+    image: "cschranz/gpu-jupyter:v1.4_cuda-11.2_ubuntu-20.04_python-only"
     ports:
       - "8080:8080"
     volumes:
       - "./:/content/"    
-    entrypoint: 'jupyter notebook --allow-root --NotebookApp.allow_origin=https://colab.research.google.com --port=8080 --NotebookApp.port_retries=0'
+    environment:
+      - GRANT_SUDO=yes
+      - JUPYTER_ENABLE_LAB=yes
+    command: bash -c 'pip install -q jupyter_http_over_ws && jupyter serverextension enable --py jupyter_http_over_ws && jupyter notebook --allow-root --NotebookApp.allow_origin=https://colab.research.google.com --port=8080 --NotebookApp.port_retries=0 --NotebookApp.password=""'

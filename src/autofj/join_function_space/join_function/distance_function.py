@@ -13,8 +13,9 @@ import torch
 
 global tokenizer
 global model
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
-model = BartModel.from_pretrained("facebook/bart-base")
+model = BartModel.from_pretrained("facebook/bart-base").to(device)
 
 """Distance Functions"""
 def jaccardDistance(x, y, w=None):
@@ -129,7 +130,7 @@ def embedDistance(x, y, embedding):
     return d
 
 def BARTEmbedding(x):
-    inputs = tokenizer(x, return_tensors="pt")
+    inputs = tokenizer(x, return_tensors="pt").to(device)
     outputs = model(**inputs)
     return outputs.last_hidden_state.mean(dim=1)
 
@@ -137,6 +138,12 @@ def euclideanEmbedDistance(x, y, embedding):
     x = embedding(x)
     y = embedding(y)
     return torch.cdist(x, y, p=2.0) 
+
+def cosineEmbedDistance(x, y, embedding):
+    x = embedding(x)
+    y = embedding(y)
+    res = torch.nn.CosineSimilarity(dim=1)(x, y)
+    return res
 
 class DistanceFunction(object):
     """Distance function

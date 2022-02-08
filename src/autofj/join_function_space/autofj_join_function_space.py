@@ -1,4 +1,7 @@
+from typing import List, Tuple
 import pandas as pd
+
+from autofj.join_function_space.join_function.distance_function import DistanceFunction
 from ..utils import print_log
 from multiprocessing import Pool
 from functools import partial
@@ -6,6 +9,9 @@ from .join_function.autofj_join_function import AutoFJJoinFunction
 from .options import autofj_lg, autofj_md, autofj_sm
 import os
 import shutil
+
+import multiprocessing
+multiprocessing.set_start_method("spawn", force=True)
 
 class AutoFJJoinFunctionSpace(object):
     """AutoFJ Configuration Space. The space is specified by the space of join
@@ -60,7 +66,7 @@ class AutoFJJoinFunctionSpace(object):
                 join_function_space)
             self.use_builtin_fj_space = True
         else:
-            self.join_functions = join_function_space
+            self.join_functions: List[AutoFJJoinFunction] = join_function_space
             self.use_builtin_fj_space = False
 
         self.verbose = verbose
@@ -160,7 +166,7 @@ class AutoFJJoinFunctionSpace(object):
 
         return LL_distance, LR_distance
 
-    def _compute_column_distance(self, arg, left, right, LL_blocked, LR_blocked,
+    def _compute_column_distance(self, arg: Tuple[str, AutoFJJoinFunction], left, right, LL_blocked, LR_blocked,
                                 cache_dir):
         """Compute distance for a column using a join function
 
@@ -273,7 +279,7 @@ class AutoFJJoinFunctionSpace(object):
         if os.path.exists(cache_dir):
             shutil.rmtree(cache_dir)
 
-    def _get_autofj_join_functions(self, options):
+    def _get_autofj_join_functions(self, options) -> List[AutoFJJoinFunction]:
         """ Get a space of built-in join functions with different options. The
         space will be formed by making cartesian product on all different
         options.
@@ -302,7 +308,7 @@ class AutoFJJoinFunctionSpace(object):
         join_functions: list of AutoFJJoinFunction object
             A list of join functions.
         """
-        join_functions = []
+        join_functions: List[AutoFJJoinFunction] = []
         # join functions using set-based distance functions
         for p in options["preprocess_methods"]:
             for t in options["tokenize_methods"]:
