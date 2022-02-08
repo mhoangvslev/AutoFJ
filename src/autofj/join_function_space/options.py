@@ -20,7 +20,7 @@ autofj_md = {
     "preprocess_methods":["lower", "lowerRemovePunctuationStem"],
     "tokenize_methods": ["threeGram", "splitBySpace"],
     "token_weights": ["uniformWeight", "idfWeight"],
-    "char_distance_functions": ["editDistance", "jaroDistance"],
+    "char_distance_functions": ["editDistance", "jaroDistance", "embed_BART-Large"],
     "set_distance_functions": ["containJaccardDistance",
                                "containCosineDistance",
                                "containDiceDistance",
@@ -35,7 +35,7 @@ autofj_sm = {
     "preprocess_methods":["lower", "lowerRemovePunctuationStem"],
     "tokenize_methods": ["threeGram", "splitBySpace"],
     "token_weights": ["idfWeight"],
-    "char_distance_functions": ["jaroDistance"],
+    "char_distance_functions": ["jaroDistance", "embed_BART-Large"],
     "set_distance_functions": ["containCosineDistance",
                                "jaccardDistance",
                                "maxincDistance"]

@@ -5,3 +5,6 @@ ngram
 editdistance
 jellyfish
 spacy
+transformers
+scipy
+torch

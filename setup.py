@@ -28,6 +28,9 @@ setuptools.setup(
         'editdistance',
         'jellyfish',
         'spacy',
+        'transformers',
+        'scipy',
+        'torch'
     ],
     include_package_data=True
 )

@@ -31,5 +31,5 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - "./data/:/content/"    
+      - "./:/content/"    
     entrypoint: 'jupyter notebook --allow-root --NotebookApp.allow_origin=https://colab.research.google.com --port=8080 --NotebookApp.port_retries=0'

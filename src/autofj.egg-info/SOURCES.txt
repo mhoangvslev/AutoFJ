@@ -12,7 +12,6 @@ src/autofj.egg-info/SOURCES.txt
 src/autofj.egg-info/dependency_links.txt
 src/autofj.egg-info/requires.txt
 src/autofj.egg-info/top_level.txt
-src/autofj/benchmark/.DS_Store
 src/autofj/benchmark/Amphibian/gt.csv
 src/autofj/benchmark/Amphibian/left.csv
 src/autofj/benchmark/Amphibian/right.csv

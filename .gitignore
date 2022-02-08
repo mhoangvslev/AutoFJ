@@ -1,2 +1,6 @@
 .DS_Store
 *.pyc
+build/
+data/
+dist/
+autofj_temp/

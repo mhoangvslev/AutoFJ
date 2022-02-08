@@ -7,7 +7,14 @@ import time
 import numpy as np
 import pandas as pd
 import spacy
+from transformers import BartTokenizer, BartModel
+from scipy.spatial.distance import euclidean
+import torch
 
+global tokenizer
+global model
+tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
+model = BartModel.from_pretrained("facebook/bart-base")
 
 """Distance Functions"""
 def jaccardDistance(x, y, w=None):
@@ -121,6 +128,16 @@ def embedDistance(x, y, embedding):
     d = 1 - x.similarity(y)
     return d
 
+def BARTEmbedding(x):
+    inputs = tokenizer(x, return_tensors="pt")
+    outputs = model(**inputs)
+    return outputs.last_hidden_state.mean(dim=1)
+
+def euclideanEmbedDistance(x, y, embedding):
+    x = embedding(x)
+    y = embedding(y)
+    return torch.cdist(x, y, p=2.0) 
+
 class DistanceFunction(object):
     """Distance function
 
@@ -168,6 +185,10 @@ class DistanceFunction(object):
         elif method == "embedDistance":
             self.func = embedDistance
             self.embedding = spacy.load("en_core_web_lg")
+        # BERT/BART
+        elif method == "embed_BART-Large":
+            self.func = euclideanEmbedDistance
+            self.embedding = BARTEmbedding
         else:
             raise Exception("{} is an invalid distance function"
                              .format(method))
@@ -192,7 +213,7 @@ class DistanceFunction(object):
             distance between tuple pairs for each row
         """
         if weight is None:
-            if self.method != "embedDistance":
+            if "embed" not in self.method:
                 distance = LR.apply(lambda x: self.func(x.value_l, x.value_r), axis=1)
             else:
                 distance = LR.apply(lambda x: self.func(x.value_l, x.value_r, self.embedding), axis=1)

@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from multiprocessing import Pool
+
+from tqdm import tqdm
 from .autofj_single_column_greedy_algorithm import AutoFJGreedyAlgorithm
 from ..utils import print_log
 import os
@@ -73,7 +75,7 @@ class AutoFJMulticolGreedyAlgorithm(object):
         best_join_config = None
         best_column_weights = None
 
-        for i in range(len(self.column_names)):
+        for i in tqdm(range(len(self.column_names)), unit="column"):
             # get the best result after adding one column
             columns, weights, join_config, LR_joins, reward \
                 = self.forward_selection(best_columns, best_weights)
