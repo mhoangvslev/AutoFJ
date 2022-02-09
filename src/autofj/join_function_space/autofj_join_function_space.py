@@ -10,9 +10,6 @@ from .options import autofj_lg, autofj_md, autofj_sm
 import os
 import shutil
 
-import multiprocessing
-multiprocessing.set_start_method("spawn", force=True)
-
 class AutoFJJoinFunctionSpace(object):
     """AutoFJ Configuration Space. The space is specified by the space of join
     functions, the space of distance thresholds and the space of column weights.

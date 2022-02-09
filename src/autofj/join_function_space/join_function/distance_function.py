@@ -11,11 +11,11 @@ from transformers import BartTokenizer, BartModel
 from scipy.spatial.distance import euclidean
 import torch
 
-global tokenizer
-global model
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
-model = BartModel.from_pretrained("facebook/bart-base").to(device)
+# global tokenizer
+# global model
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
+# model = BartModel.from_pretrained("facebook/bart-base").to(device)
 
 """Distance Functions"""
 def jaccardDistance(x, y, w=None):
@@ -129,10 +129,10 @@ def embedDistance(x, y, embedding):
     d = 1 - x.similarity(y)
     return d
 
-def BARTEmbedding(x):
-    inputs = tokenizer(x, return_tensors="pt").to(device)
-    outputs = model(**inputs)
-    return outputs.last_hidden_state.mean(dim=1)
+# def BARTEmbedding(x):
+#     inputs = tokenizer(x, return_tensors="pt").to(device)
+#     outputs = model(**inputs)
+#     return outputs.last_hidden_state.mean(dim=1)
 
 def euclideanEmbedDistance(x, y, embedding):
     x = embedding(x)
