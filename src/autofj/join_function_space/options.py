@@ -1,42 +1,10 @@
 """Options of join functions"""
 
-autofj_lg = {
-    "preprocess_methods":["lower", "lowerStem", "lowerRemovePunctuation",
-                          "lowerRemovePunctuationStem"],
-    "tokenize_methods": ["threeGram", "splitBySpace"],
-    "token_weights": ["uniformWeight", "idfWeight"],
-    "char_distance_functions": ["editDistance", "jaroDistance"], 
-    "set_distance_functions": ["containJaccardDistance",
-                               "containCosineDistance",
-                               "containDiceDistance",
-                               "intersectDistance",
-                               "jaccardDistance",
-                               "cosineDistance",
-                               "diceDistance",
-                               "maxincDistance"]
-}
+import yaml
+import os
 
-autofj_md = {
-    "preprocess_methods":["lower", "lowerRemovePunctuationStem"],
-    "tokenize_methods": ["threeGram", "splitBySpace"],
-    "token_weights": ["uniformWeight", "idfWeight"],
-    "char_distance_functions": ["editDistance", "jaroDistance", "embed_BART-Large"],
-    "set_distance_functions": ["containJaccardDistance",
-                               "containCosineDistance",
-                               "containDiceDistance",
-                               "intersectDistance",
-                               "jaccardDistance",
-                               "cosineDistance",
-                               "diceDistance",
-                               "maxincDistance"]
-}
+config = yaml.safe_load(open(os.path.join("config", "autofj.yml"), mode="rb"))
 
-autofj_sm = {
-    "preprocess_methods":["lower", "lowerRemovePunctuationStem"],
-    "tokenize_methods": ["threeGram", "splitBySpace"],
-    "token_weights": ["idfWeight"],
-    "char_distance_functions": ["jaroDistance", "embedDistance"],
-    "set_distance_functions": ["containCosineDistance",
-                               "jaccardDistance",
-                               "maxincDistance"]
-}
+autofj_lg = config["autofj_lg"]
+autofj_md = config["autofj_md"]
+autofj_sm = config["autofj_sm"]

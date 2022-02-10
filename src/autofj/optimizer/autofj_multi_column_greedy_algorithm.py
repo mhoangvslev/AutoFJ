@@ -198,7 +198,8 @@ class AutoFJMulticolGreedyAlgorithm(object):
                                           LR_w,
                                           self.precision_target,
                                           self.candidate_thresholds,
-                                          n_jobs=self.n_jobs)
+                                          n_jobs=self.n_jobs,
+                                          verbose=self.verbose)
         LR_joins, config_selected = optimizer.run()
         reward = optimizer.get_reward()
         return LR_joins, reward, config_selected

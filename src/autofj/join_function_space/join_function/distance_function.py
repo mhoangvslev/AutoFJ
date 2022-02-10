@@ -142,7 +142,7 @@ def euclideanEmbedDistance(x, y, embedding):
 def cosineEmbedDistance(x, y, embedding):
     x = embedding(x)
     y = embedding(y)
-    res = torch.nn.CosineSimilarity(dim=1)(x, y)
+    res = 1-torch.nn.CosineSimilarity(dim=1)(x, y)
     return res
 
 class DistanceFunction(object):

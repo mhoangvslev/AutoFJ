@@ -156,8 +156,7 @@ class AutoFJ(object):
         LR_blocked = nr.apply(LR_blocked)
 
         # create join function space
-        jf_space = AutoFJJoinFunctionSpace(self.join_function_space,
-                                           n_jobs=self.n_jobs)
+        jf_space = AutoFJJoinFunctionSpace(self.join_function_space,n_jobs=self.n_jobs, verbose=self.verbose)
 
         # compute distance
         if self.verbose:
@@ -179,7 +178,8 @@ class AutoFJ(object):
             precision_target=self.precision_target,
             candidate_thresholds=self.distance_threshold_space,
             candidate_column_weights=self.column_weight_space,
-            n_jobs=self.n_jobs
+            n_jobs=self.n_jobs,
+            verbose=self.verbose
         )
 
         self.selected_column_weights, self.selected_join_configs, LR_joins = \
