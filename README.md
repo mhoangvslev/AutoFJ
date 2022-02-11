@@ -1,5 +1,8 @@
 # AutoFJ
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1YF5luIGORFFkIWBbec9cB3XxFZaYITDd)
+
+
 The official code for our SIGMOD 2021 paper: [Auto-FuzzyJoin: Auto-Program Fuzzy Similarity Joins Without Labeled Examples](https://arxiv.org/abs/2103.04489). To reproduce the main results in our paper, switch to `reproduce` branch.
 
 AutoFJ automatically produces record pairs that approximately match in two input
