@@ -137,6 +137,11 @@ class AutoFJ(object):
         # get names of columns to be joined
         if on is None:
             on = sorted(list(set(left.columns).intersection(right.columns)))
+        elif isinstance(on, str):
+            on = [on + "autofj_id"]
+        elif isinstance(on, list):
+            on = on + ["autofj_id"]
+
         left = left[on]
         right = right[on]
 

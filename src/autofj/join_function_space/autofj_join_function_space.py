@@ -70,6 +70,9 @@ class AutoFJJoinFunctionSpace(object):
         self.n_jobs = n_jobs if n_jobs > 0 else os.cpu_count()
         self.cache_dir = cache_dir
 
+        if os.path.exists(self.cache_dir):
+            shutil.rmtree(self.cache_dir)
+
     def compute_distance(self, left, right, LL_blocked, LR_blocked):
         """Compute distance between each record pair in the blocked table
 

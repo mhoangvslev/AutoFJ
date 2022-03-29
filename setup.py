@@ -27,7 +27,7 @@ setuptools.setup(
         'ngram',
         'editdistance',
         'jellyfish',
-        'spacy[cuda112]',
+        'spacy',
         'transformers',
         'scipy',
         'torch',

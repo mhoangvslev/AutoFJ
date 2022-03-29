@@ -4,3 +4,4 @@ build/
 data/
 dist/
 autofj_temp/
+src/autofj.egg-info/
