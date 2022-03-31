@@ -323,3 +323,109 @@ class AutoFJJoinFunctionSpace(object):
                 jf = AutoFJJoinFunction(p, None, None, d)
                 join_functions.append(jf)
         return join_functions
+
+class AutoFJJoinFunctionSpacePred(AutoFJJoinFunctionSpace):
+    def __init__(self, union_of_configs, n_jobs=-1, verbose=False, cache_dir="autofj_temp"):
+
+        def parse_jf(jf):
+            return [ None if proc == 'None' else proc for proc in jf ]
+            
+        jfs = [ parse_jf(jf.split("_")) for jf, _ in union_of_configs ]
+        self.join_functions = [ AutoFJJoinFunction(*jf) for jf in jfs ]
+        self.verbose = verbose
+        self.n_jobs = n_jobs if n_jobs > 0 else os.cpu_count()
+        self.cache_dir = cache_dir
+        self.use_builtin_fj_space = False
+
+    def compute_distance(self, left, right, LL_blocked, LR_blocked):
+        """Compute distance between each record pair in the blocked table
+
+        Parameters
+        ----------
+        left: pd.DataFrame
+            The left table. The id column is named as autofj_id.
+
+        right: pd.DataFrame
+            The right table. The id column is named as autofj_id.
+
+        LL_blocked: pd.DataFrame
+            The blocked table of left-left self-join, i.e., candidate set.
+            The id columns are named as autofj_id_l and autofj_id_r,
+            corresponding to the id column of left and another left table,
+            respectively.
+
+        LR_blocked: pd.DataFrame
+            The blocked table of left-right join, i.e., candidate set.
+            The id columns are named as autofj_id_l and autofj_id_r,
+            corresponding to the id column of left and right table, respectively.
+
+        Return:
+        -------
+        LR_distance: dict {string: pd.DataFrame}
+            A dict of distance tables measured by different join functions. The
+            key of dict is the name of the join function. The value is a
+            distance table that contains distance between tuple pairs for each
+            column (see the example below).
+
+            Example of distance table:
+            | autofj_id_l | autofj_id_r | column 1 | column 2 | column 3 |
+            |------------------------------------------------------------|
+            |      0      |      1      |    0.5   |     0.2  |     1    |
+            |      0      |      2      |    0.3   |     0.4  |    0.7   |
+        """
+        # sort by ids
+        LL_blocked = LL_blocked[["autofj_id_l", "autofj_id_r"]] \
+            .sort_values(by=["autofj_id_r", "autofj_id_l"]) \
+            .reset_index(drop=True)
+        LR_blocked = LR_blocked[["autofj_id_l", "autofj_id_r"]] \
+            .sort_values(by=["autofj_id_r", "autofj_id_l"]) \
+            .reset_index(drop=True)
+
+        # build cache for computing distance
+        if self.use_builtin_fj_space:
+            self.build_cache(left, right, self.cache_dir)
+
+        # compute distance for each column
+        column_names = [c for c in left.columns if c != "autofj_id"]
+        args = []
+        for c in column_names:
+            for jf in self.join_functions:
+                args.append((c, jf))
+
+        func = partial(self._compute_column_distance, left=left, right=right,
+                       LL_blocked=LL_blocked, LR_blocked=LR_blocked,
+                       cache_dir=self.cache_dir)
+
+        if self.n_jobs == 1:
+            column_distances = [func(arg) for arg in args]
+        else:
+            with Pool(self.n_jobs) as pool:
+                column_distances = pool.map(func, args)
+
+        # remove cache
+        if self.use_builtin_fj_space:
+            self.remove_cache(self.cache_dir)
+
+        # get distance table for each join function
+        LL_distance = {}
+        LR_distance = {}
+
+        for i, (c, jf) in enumerate(args):
+            jf_name = jf.name
+            if jf_name not in LL_distance:
+                LL_distance[jf_name] = {
+                    "autofj_id_l": LL_blocked["autofj_id_l"].values,
+                    "autofj_id_r": LL_blocked["autofj_id_r"].values}
+                LR_distance[jf_name] = {
+                    "autofj_id_l": LR_blocked["autofj_id_l"].values,
+                    "autofj_id_r": LR_blocked["autofj_id_r"].values}
+
+            LL_d, LR_d = column_distances[i]
+            LL_distance[jf_name][c] = LL_d
+            LR_distance[jf_name][c] = LR_d
+
+        for jf_name in LL_distance.keys():
+            LL_distance[jf_name] = pd.DataFrame(LL_distance[jf_name])
+            LR_distance[jf_name] = pd.DataFrame(LR_distance[jf_name])
+
+        return LL_distance, LR_distance

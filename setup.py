@@ -31,7 +31,8 @@ setuptools.setup(
         'transformers',
         'scipy',
         'torch',
-        'tqdm'
+        'tqdm',
+        'scikit-learn'
     ],
     include_package_data=True
 )

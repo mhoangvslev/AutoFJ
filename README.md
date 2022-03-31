@@ -44,9 +44,22 @@ Run the following code to join the left and right table of TennisTournament data
 ```python
 from autofj.datasets import load_data
 from autofj import AutoFJ
-left_table, right_table, gt_table = load_data("TennisTournament")
+left_table, right_table, gt_table = load_data
+
+l_train, r_train, gt_train = ...
+l_test, r_test, gt_test = ...
+
+("TennisTournament")
 fj = AutoFJ(precision_target=0.9)
-result = fj.join(left_table, right_table, "id")
+
+# Train
+fj.fit((l_train, r_train), gt_train, id="id")
+fj.train_result
+fj.evaluate(gt_table, fj.train_result)
+
+# Predict
+y_pred = fj.predict((l_test, r_test), gt_test, id="id")
+fj.evaluate(gt_test, y_pred)
 ```
 
 ## Documentation
