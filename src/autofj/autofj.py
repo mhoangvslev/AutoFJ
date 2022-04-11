@@ -1,4 +1,6 @@
+import pickle
 import shutil
+from statistics import mode
 from .join_function_space.autofj_join_function_space import AutoFJJoinFunctionSpace, AutoFJJoinFunctionSpacePred
 from .blocker.autofj_blocker import AutoFJBlocker
 from .optimizer.autofj_multi_column_greedy_algorithm import \
@@ -360,27 +362,46 @@ class AutoFJ(BaseEstimator):
                  blocker=None,
                  n_jobs=-1,
                  verbose=False):
-        self.trainer = AutoFJTrainer(precision_target, join_function_space, distance_threshold_space, column_weight_space, blocker, n_jobs, verbose)
+        self.precision_target = precision_target
+        self.join_function_space = join_function_space
+        self.distance_threshold_space = distance_threshold_space
+        self.column_weight_space = column_weight_space
         self.blocker = blocker
         self.n_jobs = n_jobs
         self.verbose = verbose
-        self.selected_column_weights = None
-        self.selected_join_config = None
 
     def fit(self, X, y=None, **kwargs):
         left, right = X
-        self.train_results = self.trainer.join(left, right, kwargs.get('id_column'), kwargs.get('on'))
-        self.selected_join_config = self.trainer.selected_join_configs
-        self.selected_column_weights = self.trainer.selected_column_weights
+        self.trainer_ = AutoFJTrainer(
+            self.precision_target, 
+            self.join_function_space, 
+            self.distance_threshold_space, 
+            self.column_weight_space, 
+            self.blocker, 
+            self.n_jobs, self.verbose
+        )
+        self.selected_column_weights_ = None
+        self.selected_join_config_ = None
+        self.train_results_ = self.trainer_.join(left, right, kwargs.get('id_column'), kwargs.get('on'))
+        self.selected_join_config_ = self.trainer_.selected_join_configs
+        self.selected_column_weights_ = self.trainer_.selected_column_weights
         return self
 
+    def save_model(self, model_file: str):
+        pickle.dump(self, open(f"{model_file}.pkl", "wb"))
+
+    @staticmethod
+    def load_model(model_file: str):
+        autofj = pickle.load(open(model_file, "rb"))
+        return autofj
+
     def predict(self, X, **kwargs):
-        predictor = AutoFJPredictor(self.selected_join_config, self.selected_column_weights, self.blocker, self.n_jobs, self.verbose)
+        self.predictor_ = AutoFJPredictor(self.selected_join_config_, self.selected_column_weights_, self.blocker, self.n_jobs, self.verbose)
         left, right = X
-        res = predictor.join(left, right, kwargs.get('id_column'), kwargs.get('on'))
+        res = self.predictor_.join(left, right, kwargs.get('id_column'), kwargs.get('on'))
         return res
 
-    def evalutate(self, y, y_pred, **kwargs):
+    def evaluate(self, y, y_pred, **kwargs):
         gt_joins = y[["id_l", "id_r"]].values
         pred_joins = y_pred[["id_l", "id_r"]].values
 
@@ -390,19 +411,18 @@ class AutoFJ(BaseEstimator):
         # TP: When the prediction is in ground truth
         tp = pred_set.intersection(gt_set)
 
-        # FP: In prediction but not in the ground truth
-        fp = pred_set.difference(gt_set)
-
-        # TN: neither in prediction or ground truth
-        tn = pred_set.difference(gt_set)
-
-        # FN: in ground truth but not in prediction
-        fn = gt_set.difference(pred_set)
-
         precision = len(tp) / len(pred_set)
         recall = len(tp) / len(gt_set)
 
         f_coef = kwargs.get('f_coef')
-        f_coef = 2 if f_coef is None else f_coef
-        fscore = f_coef * precision * recall / (precision + recall)
-        return {'precision': precision, 'recall': recall, 'f{f_coef}-score': fscore}
+        f_coef = 1 if f_coef is None else f_coef
+        fscore = (f_coef + 1) * precision * recall / (precision + recall)
+        return {'precision': precision, 'recall': recall, f'f{f_coef}-score': fscore}
+
+    def get_scorers(self):
+        return {
+            'precision_recall_fscore': lambda y_true, y_pred, **kwargs: tuple(self.evaluate(y_true, y_pred, **kwargs).values()),
+            'precision': lambda y_true, y_pred, **kwargs: self.evaluate(y_true, y_pred, **kwargs)['precision'],
+            'recall': lambda y_true, y_pred, **kwargs: self.evaluate(y_true, y_pred, **kwargs)['recall'],
+            'fscore': lambda y_true, y_pred, **kwargs: self.evaluate(y_true, y_pred, **kwargs)['precision'],
+        }
