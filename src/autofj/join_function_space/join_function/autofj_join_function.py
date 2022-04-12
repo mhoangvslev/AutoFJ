@@ -171,13 +171,22 @@ class AutoFJJoinFunction(object):
         X_pre: pd.Series
             Preprocessed data.
         """
-        if cache_path is not None and os.path.exists(cache_path):
-            with open(cache_path, "rb") as f:
-                X_pre = pickle.load(f)
-        else:
+
+        def produce():
             preprocessor = Preprocessor(self.preprocess_method)
-            X_pre = preprocessor.preprocess(X)
-            self.save_cache(X_pre, cache_path)
+            res = preprocessor.preprocess(X)
+            if os.path.exists(cache_path): os.remove(cache_path)
+            self.save_cache(res, cache_path)
+            return res
+
+        X_pre = None
+        if cache_path is not None and os.path.exists(cache_path):
+            try:
+                with open(cache_path, "rb") as f:
+                    X_pre = pickle.load(f)
+            except EOFError:
+                X_pre = produce()
+        else: X_pre = produce()
         return X_pre
 
     def tokenize(self, X_pre, cache_path=None):
@@ -193,13 +202,23 @@ class AutoFJJoinFunction(object):
         X_pre_token: pd.Series
             Data after preprocessing and tokenization
         """
-        if cache_path is not None and os.path.exists(cache_path):
-            with open(cache_path, "rb") as f:
-                X_pre_token = pickle.load(f)
-        else:
+
+        def produce():
             tokenizer = Tokenizer(self.tokenize_method)
-            X_pre_token = tokenizer.tokenize(X_pre)
-            self.save_cache(X_pre_token, cache_path)
+            res = tokenizer.tokenize(X_pre)
+            if os.path.exists(cache_path): os.remove(cache_path)
+            self.save_cache(res, cache_path)
+            return res
+
+        X_pre_token = None
+        if cache_path is not None and os.path.exists(cache_path):
+            try:
+                with open(cache_path, "rb") as f:
+                    X_pre_token = pickle.load(f)
+            except EOFError:
+                X_pre_token = produce()
+        else: X_pre_token = produce()
+            
         return X_pre_token
 
     def compute_token_weights(self, X_pre_token, cache_path=None):
@@ -215,13 +234,21 @@ class AutoFJJoinFunction(object):
         token_weights: dict
             Token weights
         """
-        if cache_path is not None and os.path.exists(cache_path):
-            with open(cache_path, "rb") as f:
-                token_weights = pickle.load(f)
-        else:
+        def produce():
             weight = TokenWeight(self.token_weight_method)
-            token_weights = weight.weight(X_pre_token)
-            self.save_cache(token_weights, cache_path)
+            res = weight.weight(X_pre_token)
+            if os.path.exists(cache_path): os.remove(cache_path)
+            self.save_cache(res, cache_path)
+            return res
+
+        token_weights = None
+        if cache_path is not None and os.path.exists(cache_path):
+            try:
+                with open(cache_path, "rb") as f:
+                    token_weights = pickle.load(f)
+            except EOFError:
+                token_weights = produce()
+        else: token_weights = produce()
         return token_weights
 
     def apply_distance_function(self, LR_blocked, L_pre_token, R_pre_token,

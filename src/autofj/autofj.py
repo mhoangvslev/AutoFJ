@@ -1,6 +1,12 @@
 import pickle
 import shutil
 from statistics import mode
+from time import sleep, time
+from typing import Generator, List, Optional, Tuple, Union
+
+from sklearn.model_selection import KFold
+from sklearn.utils import shuffle
+from tqdm import tqdm
 from .join_function_space.autofj_join_function_space import AutoFJJoinFunctionSpace, AutoFJJoinFunctionSpacePred
 from .blocker.autofj_blocker import AutoFJBlocker
 from .optimizer.autofj_multi_column_greedy_algorithm import \
@@ -99,7 +105,13 @@ class AutoFJTrainer(object):
         self.n_jobs = n_jobs if n_jobs > 0 else os.cpu_count()
         self.verbose = verbose
 
-    def join(self, left_table, right_table, id_column, on=None):
+    def join(self, 
+        left_table: pd.DataFrame, 
+        right_table: pd.DataFrame, 
+        id_column: str, 
+        on: Optional[Union[str, List[str]]]=None, 
+        cache_dir="autofj_temp"
+    ):
         """Join left table and right table.
 
         Parameters
@@ -127,6 +139,16 @@ class AutoFJTrainer(object):
                 suffixed with "_l" and the columns of right table are suffixed
                 with "_r"
         """
+
+        if os.path.exists(cache_dir):
+            print("Removing cache from previous runs...")
+            shutil.rmtree(cache_dir)
+
+            while os.path.exists(cache_dir): # check if it exists
+                print("Deleting...")
+                sleep(0.1)
+                pass
+
         left = left_table.copy(deep=True)
         right = right_table.copy(deep=True)
 
@@ -282,11 +304,21 @@ class AutoFJPredictor(object):
             LL_group[config] = LL_dict
         return LL_group
 
-    def join(self, left_table, right_table, id_column, on=None, cache_dir="autofj_temp"):
-
+    def join(self, 
+        left_table: pd.DataFrame, 
+        right_table: pd.DataFrame, 
+        id_column: str, 
+        on: Optional[Union[str, List[str]]]=None, 
+        cache_dir="autofj_temp"
+    ):
         if os.path.exists(cache_dir):
             print("Removing cache from previous runs...")
             shutil.rmtree(cache_dir)
+
+            while os.path.exists(cache_dir): # check if it exists
+                print("Deleting...")
+                sleep(0.1)
+                pass
 
         left = left_table.copy(deep=True)
         right = right_table.copy(deep=True)
@@ -353,6 +385,52 @@ class AutoFJPredictor(object):
 
         return result    
 
+class AutoFJKFold(KFold):
+    """KFold implementation for AutoFJ dataset.
+
+    Args:
+        KFold (_type_): _description_
+    """
+
+    def split(self, 
+        X: Tuple[pd.DataFrame, pd.DataFrame], 
+        y: pd.DataFrame=None, 
+        groups=None
+    ) -> Generator[Tuple[
+            Tuple[Tuple[pd.DataFrame, pd.DataFrame], pd.DataFrame],
+            Tuple[Tuple[pd.DataFrame, pd.DataFrame], pd.DataFrame]
+        ], None, None
+    ]:
+        left, right = X
+        left = shuffle(left.copy(deep=True), random_state=self.random_state)
+        right = shuffle(right.copy(deep=True), random_state=self.random_state)
+        
+        L_index_splits = np.array_split(np.arange(len(left)), self.n_splits)
+        R_index_splits = np.array_split(np.arange(len(right)), self.n_splits)
+
+        for n in range(self.n_splits):
+            test_split_indexes = [ i for i in range(self.n_splits) if i != n ]
+            L_test_indexes = np.concatenate(
+                np.take(L_index_splits, test_split_indexes, axis=0), 
+                axis=None
+            )
+            R_test_indexes = np.concatenate(
+                np.take(R_index_splits, test_split_indexes, axis=0), 
+                axis=None
+            )
+
+            l_train, l_test = left.iloc[L_test_indexes], left.iloc[L_index_splits[n]]
+            r_train, r_test = right.iloc[R_test_indexes], right.iloc[R_index_splits[n]]
+
+            gt_train = y[ y['id_l'].isin(l_train['id'].values) & y['id_r'].isin(r_train['id'].values)]
+            gt_test = y[ y['id_l'].isin(l_test['id'].values) & y['id_r'].isin(r_test['id'].values)]
+
+            train = (l_train, r_train), gt_train
+            test = (l_test, r_test), gt_test
+            yield train, test
+
+
+
 class AutoFJ(BaseEstimator):
     def __init__(self,
                  precision_target=0.9,
@@ -370,7 +448,7 @@ class AutoFJ(BaseEstimator):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-    def fit(self, X, y=None, **kwargs):
+    def fit(self, X: Tuple[pd.DataFrame, pd.DataFrame], y: pd.DataFrame=None, **kwargs):
         left, right = X
         self.trainer_ = AutoFJTrainer(
             self.precision_target, 
@@ -418,6 +496,38 @@ class AutoFJ(BaseEstimator):
         f_coef = 1 if f_coef is None else f_coef
         fscore = (f_coef + 1) * precision * recall / (precision + recall)
         return {'precision': precision, 'recall': recall, f'f{f_coef}-score': fscore}
+
+    def cross_validate(self, X, y, id_column, on, cv=5, shuffle=False, random_state=None, scorer=None):
+        kfold = AutoFJKFold(n_splits=cv, random_state=random_state, shuffle=shuffle)
+        result = {
+            "train_times": [],
+            "test_times": [],
+            "train_scores": [],
+            "test_scores": [],
+        }
+
+        if scorer is None: scorer = self.evaluate
+        
+        for train, test in tqdm(kfold.split(X, y), total=cv, unit="fold"):
+            X_train, y_train = train
+            X_test, y_test = test
+
+            trainBegin = time()
+            self.fit(X_train, y_train, id_column=id_column, on=on)
+            trainEnd = time()
+
+            result["train_times"].append(trainEnd-trainBegin)
+            result["train_scores"].append(scorer(y_train, self.train_results_))
+
+            testBegin = time()
+            y_pred = self.predict(X_test, id_column=id_column, on=on)
+            testEnd = time()
+
+            result["test_times"].append(testEnd-testBegin)
+            result["test_scores"].append(scorer(y_test, y_pred))
+
+        return result
+
 
     def get_scorers(self):
         return {
