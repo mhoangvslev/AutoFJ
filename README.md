@@ -43,23 +43,38 @@ left_table, right_table, gt_table = load_data(dataset_name)
 Run the following code to join the left and right table of TennisTournament dataset.
 ```python
 from autofj.datasets import load_data
-from autofj import AutoFJ
+from autofj import AutoFJ, cross_validate, train_test_split
 left_table, right_table, gt_table = load_data
 
-l_train, r_train, gt_train = ...
-l_test, r_test, gt_test = ...
+X = (left_table, right_table)
+y = gt_table
 
-("TennisTournament")
-fj = AutoFJ(precision_target=0.9)
+train, test = train_test_split(X, y, train_size=0.75 shuffle=True, stable_left=True)
+
+X_train, y_train = train
+X_test, y_test = test
+
+model = AutoFJ(precision_target=0.9, verbose=False, name="Country")
 
 # Train
-fj.fit((l_train, r_train), gt_train, id="id")
-fj.train_result
-fj.evaluate(gt_table, fj.train_result)
+model.fit(X_train, y_train, id_column="id", on=["title"])
+print(model.evaluate(y_train, model.train_results_))
 
 # Predict
-y_pred = fj.predict((l_test, r_test), gt_test, id="id")
-fj.evaluate(gt_test, y_pred)
+y_pred = model.predict(X_test, id_column="id", on=["title"])
+print(model.evaluate(y_test, y_pred))
+
+# KFold Cross validation
+results_cv = cross_validate(model, X, y, id_column="id", on=["title"], cv=5, scorer=model.evaluate, stable_left=True)
+print(results_cv)
+```
+
+## Automatic workflow
+
+The following `Snakemake` workflow will perform all the benchmarks on all datasets. For more information, refer to `Snakefile`
+
+```bash
+snakemake --cores 1 -C resultDir=path/to/benchmark dataDir=src/autofj/benchmark
 ```
 
 ## Documentation

@@ -5,6 +5,7 @@ from .distance_function import DistanceFunction
 import pandas as pd
 import os
 import pickle
+from pickle import UnpicklingError
 from ...utils import makedir
 
 
@@ -184,7 +185,7 @@ class AutoFJJoinFunction(object):
             try:
                 with open(cache_path, "rb") as f:
                     X_pre = pickle.load(f)
-            except EOFError:
+            except:
                 X_pre = produce()
         else: X_pre = produce()
         return X_pre
@@ -215,7 +216,7 @@ class AutoFJJoinFunction(object):
             try:
                 with open(cache_path, "rb") as f:
                     X_pre_token = pickle.load(f)
-            except EOFError:
+            except:
                 X_pre_token = produce()
         else: X_pre_token = produce()
             
@@ -246,7 +247,7 @@ class AutoFJJoinFunction(object):
             try:
                 with open(cache_path, "rb") as f:
                     token_weights = pickle.load(f)
-            except EOFError:
+            except:
                 token_weights = produce()
         else: token_weights = produce()
         return token_weights

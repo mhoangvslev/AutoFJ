@@ -1,1 +1,2 @@
 recursive-include src/autofj/benchmark/ *
+recursive-include src/autofj/join_function_space/ *.yml *yaml

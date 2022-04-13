@@ -70,9 +70,6 @@ class AutoFJJoinFunctionSpace(object):
         self.n_jobs = n_jobs if n_jobs > 0 else os.cpu_count()
         self.cache_dir = cache_dir
 
-        if os.path.exists(self.cache_dir):
-            shutil.rmtree(self.cache_dir)
-
     def compute_distance(self, left, right, LL_blocked, LR_blocked):
         """Compute distance between each record pair in the blocked table
 
@@ -140,7 +137,7 @@ class AutoFJJoinFunctionSpace(object):
 
         # remove cache
         if self.use_builtin_fj_space:
-            self.remove_cache(self.cache_dir)
+            self.remove_cache()
 
         # get distance table for each join function
         LL_distance = {}
@@ -275,9 +272,9 @@ class AutoFJJoinFunctionSpace(object):
                                                    cache_path=weight_path)
                 token_weights[(p, t, w)] = weights
 
-    def remove_cache(self, cache_dir="autofj_temp"):
-        if os.path.exists(cache_dir):
-            shutil.rmtree(cache_dir)
+    def remove_cache(self):
+        if os.path.exists(self.cache_dir):
+            shutil.rmtree(self.cache_dir)
 
     def _get_autofj_join_functions(self, options) -> List[AutoFJJoinFunction]:
         """ Get a space of built-in join functions with different options. The
@@ -404,7 +401,7 @@ class AutoFJJoinFunctionSpacePred(AutoFJJoinFunctionSpace):
 
         # remove cache
         if self.use_builtin_fj_space:
-            self.remove_cache(self.cache_dir)
+            self.remove_cache()
 
         # get distance table for each join function
         LL_distance = {}

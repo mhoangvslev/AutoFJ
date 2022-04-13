@@ -32,7 +32,8 @@ setuptools.setup(
         'scipy',
         'torch',
         'tqdm',
-        'scikit-learn'
+        'scikit-learn',
+        'Click'
     ],
     include_package_data=True
 )

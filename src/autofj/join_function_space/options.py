@@ -2,8 +2,9 @@
 
 import yaml
 import os
+import pkgutil
 
-config = yaml.safe_load(open(os.path.join("config", "autofj.yml"), mode="rb"))
+config = yaml.safe_load(pkgutil.get_data(__name__, "autofj_jfs.yml"))
 
 autofj_lg = config["autofj_lg"]
 autofj_md = config["autofj_md"]
