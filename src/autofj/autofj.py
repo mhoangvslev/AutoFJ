@@ -495,7 +495,7 @@ class AutoFJ(BaseEstimator):
         self.blocker = blocker
         self.n_jobs = n_jobs
         self.verbose = verbose
-        self.name=None
+        self.name=name
 
     def fit(self, X: Tuple[pd.DataFrame, pd.DataFrame], y: pd.DataFrame=None, **kwargs):
         left, right = X
@@ -545,8 +545,11 @@ class AutoFJ(BaseEstimator):
         # TP: When the prediction is in ground truth
         tp = pred_set.intersection(gt_set)
 
-        precision = len(tp) / len(pred_set)
-        recall = len(tp) / len(gt_set)
+        try: precision = len(tp) / len(pred_set)
+        except: precision = np.nan
+
+        try: recall = len(tp) / len(gt_set)
+        except: recall = np.nan
 
         f_coef = kwargs.get('f_coef')
         f_coef = 1 if f_coef is None else f_coef

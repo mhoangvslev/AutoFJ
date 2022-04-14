@@ -19,7 +19,7 @@ rule autofj_benchmark_summary:
     input: 
         expand(
             "{{resultDir}}/{dataset}/{dataset}_{{bm_pipeline}}_model.pkl",
-            dataset=os.listdir(config["dataDir"])
+            dataset=sorted(os.listdir(config["dataDir"]))
         )
     output: "{resultDir}/summary/{bm_pipeline}/{phase}_result.csv"
     run:
