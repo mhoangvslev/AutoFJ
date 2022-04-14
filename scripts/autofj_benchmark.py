@@ -1,4 +1,6 @@
+from glob import glob
 import pathlib
+import shutil
 from autofj import AutoFJ
 import pandas as pd
 import os
@@ -16,9 +18,14 @@ def cli():
 @click.argument("right", type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.argument("gt", type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.argument("result-dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
-@click.argument("benchmark", type=click.STRING)
+@click.argument("dataset", type=click.STRING)
 @click.argument("bm_pipeline", type=click.STRING)
-def autofj_benchmark_cv(left, right, gt, result_dir, benchmark, bm_pipeline):
+def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline):
+
+    tmpDirs = glob("tmp*", recursive=False)
+    for tmpDir in tmpDirs: 
+        shutil.rmtree(tmpDir)
+        
     left = pd.read_csv(left)
     right = pd.read_csv(right)
     gt = pd.read_csv(gt)
@@ -26,7 +33,7 @@ def autofj_benchmark_cv(left, right, gt, result_dir, benchmark, bm_pipeline):
     X = (left, right)
     y = gt
 
-    model = AutoFJ(precision_target=0.9, verbose=False, name=f"{benchmark}_{bm_pipeline}")
+    model = AutoFJ(precision_target=0.9, verbose=False)
     if bm_pipeline == "cv":
         results = cross_validate(model, X, y, id_column="id", on=["title"], cv=5, scorer=model.evaluate, stable_left=True)
     else:
@@ -49,11 +56,11 @@ def autofj_benchmark_cv(left, right, gt, result_dir, benchmark, bm_pipeline):
         except ValueError:
             df = pd.DataFrame(result, index=[0])
         
-        filePath = os.path.join(result_dir, benchmark, bm_pipeline)
+        filePath = os.path.join(result_dir, dataset, bm_pipeline)
         pathlib.Path(filePath).mkdir(parents=True, exist_ok=True)
         df.to_csv(os.path.join(filePath, f"{category}.csv"))
 
-    model.save_model(os.path.join(result_dir, benchmark, f"{benchmark}_{bm_pipeline}_model.pkl"))
+    model.save_model(os.path.join(result_dir, dataset, f"{dataset}_{bm_pipeline}_model.pkl"))
 
 if __name__ == '__main__':
     cli()

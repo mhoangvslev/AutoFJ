@@ -6,3 +6,4 @@ dist/
 autofj_temp/
 src/autofj.egg-info/
 .snakemake/
+tmp*/

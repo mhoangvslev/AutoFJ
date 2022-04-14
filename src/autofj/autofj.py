@@ -13,6 +13,7 @@ from .blocker.autofj_blocker import AutoFJBlocker
 from .optimizer.autofj_multi_column_greedy_algorithm import \
     AutoFJMulticolGreedyAlgorithm
 import pandas as pd
+from pandas.util import hash_pandas_object
 from .utils import print_log
 import os
 from .negative_rule import NegativeRule
@@ -486,7 +487,6 @@ class AutoFJ(BaseEstimator):
                  blocker=None,
                  n_jobs=-1,
                  verbose=False,
-                 name=None
     ):
         self.precision_target = precision_target
         self.join_function_space = join_function_space
@@ -495,10 +495,15 @@ class AutoFJ(BaseEstimator):
         self.blocker = blocker
         self.n_jobs = n_jobs
         self.verbose = verbose
-        self.name=name
 
     def fit(self, X: Tuple[pd.DataFrame, pd.DataFrame], y: pd.DataFrame=None, **kwargs):
         left, right = X
+        dataHash = (
+            hash_pandas_object(left).sum() + 
+            hash_pandas_object(right).sum() + 
+            0 if y is None else hash_pandas_object(y).sum()
+        )
+
         trainer = AutoFJTrainer(
             self.precision_target, 
             self.join_function_space, 
@@ -506,7 +511,7 @@ class AutoFJ(BaseEstimator):
             self.column_weight_space, 
             self.blocker, 
             self.n_jobs, self.verbose,
-            name=self.name
+            name=str(dataHash)
         )
         self.selected_column_weights_ = None
         self.selected_join_config_ = None
@@ -524,13 +529,14 @@ class AutoFJ(BaseEstimator):
         return autofj
 
     def predict(self, X, **kwargs):
+        dataHash = np.sum([hash_pandas_object(df).sum() for df in X])
         predictor = AutoFJPredictor(
             self.selected_join_config_, 
             self.selected_column_weights_, 
             self.blocker, 
             self.n_jobs, 
             self.verbose,
-            name=self.name
+            name=str(dataHash)
         )
         left, right = X
         return predictor.join(left, right, kwargs.get('id_column'), kwargs.get('on'))
@@ -551,9 +557,12 @@ class AutoFJ(BaseEstimator):
         try: recall = len(tp) / len(gt_set)
         except: recall = np.nan
 
-        f_coef = kwargs.get('f_coef')
-        f_coef = 1 if f_coef is None else f_coef
-        fscore = (f_coef + 1) * precision * recall / (precision + recall)
+        try:
+            f_coef = kwargs.get('f_coef')
+            f_coef = 1 if f_coef is None else f_coef
+            fscore = (f_coef + 1) * precision * recall / (precision + recall)
+        except:
+            fscore = np.nan
         return {'precision': precision, 'recall': recall, f'f{f_coef}-score': fscore}
 
     def get_scorers(self):

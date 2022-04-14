@@ -379,7 +379,7 @@ class AutoFJJoinFunctionSpacePred(AutoFJJoinFunctionSpace):
             .reset_index(drop=True)
 
         # build cache for computing distance
-        if self.use_builtin_fj_space:
+        if not os.path.exists(self.cache_dir):
             self.build_cache(left, right, self.cache_dir)
 
         # compute distance for each column
@@ -400,8 +400,7 @@ class AutoFJJoinFunctionSpacePred(AutoFJJoinFunctionSpace):
                 column_distances = pool.map(func, args)
 
         # remove cache
-        if self.use_builtin_fj_space:
-            self.remove_cache()
+        self.remove_cache()
 
         # get distance table for each join function
         LL_distance = {}
