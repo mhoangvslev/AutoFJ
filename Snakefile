@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import re
 
 rule all:
     input: 
@@ -10,25 +11,40 @@ rule all:
         #     4. 25% train rate
         #     5. 5-fold cross-validation
         expand(
-            "{resultDir}/summary/{bm_pipeline}/{phase}_result.csv", 
+            "{resultDir}/cross_validation_scores.csv", 
             resultDir=config["resultDir"],
-            bm_pipeline=["90", "75", "50", "25", "cv"],
             phase=["train", "test"]
         )
 
 rule autofj_benchmark_summary:
     input: 
         expand(
-            "{{resultDir}}/{dataset}/{dataset}_{{bm_pipeline}}_model.pkl",
-            dataset=sorted(os.listdir(config["dataDir"]))
+            "{{resultDir}}/{dataset}/{dataset}_{bm_pipeline}_model.pkl",
+            dataset=sorted(os.listdir(config["dataDir"])),
+            bm_pipeline=["90", "75", "50", "25", "cv"],
         )
-    output: "{resultDir}/summary/{bm_pipeline}/{phase}_result.csv"
+    output: "{resultDir}/cross_validation_scores.csv"
     run:
-        df = pd.read_csv(f"{wildcards.resultDir}/{wildcards.dataset}/{wildcards.bm_pipeline}/{wildcards.phase}_result.csv")
-        df["dataset"] = wildards.dataset
-        fileName = f"{wildards.resultDir}/{wildcards.phase}_result.csv"
-        isNew = os.path.exists(fileName)
-        df.to_csv(fileName, index=False, header=isNew, mode="w" if isNew else "a")
+        for model in input:
+            homeDir = os.path.dirname(model)
+            dataset = os.path.basename(homeDir)
+            modelName = os.path.basename(model)
+
+            bm_pipeline = re.sub(r'\w+_(\w+)_model\.pkl', r'\1', modelName)
+
+            for phase in ["train", "test"]:
+                df = pd.read_csv(os.path.join(homeDir, f"{bm_pipeline}", f"{phase}_scores.csv"))
+                df.drop("Unnamed: 0", axis=1, inplace=True)
+                df["dataset"] = dataset
+                df["phase"] = phase
+
+                if bm_pipeline == "cv":
+                    fileName = f"{wildcards.resultDir}/cross_validation_scores.csv"
+                else:
+                    df["trainSize"] = bm_pipeline
+                    fileName = f"{wildcards.resultDir}/scalability_scores.csv"
+                isNew = not os.path.exists(fileName)
+                df.to_csv(fileName, header=isNew, index=False, mode="w" if isNew else "a")
 
 rule autofj_benchmark:
     # For each benchmark dataset:
