@@ -46,14 +46,19 @@ rule autofj_benchmark_summary:
                 isNew = not os.path.exists(fileName)
                 df.to_csv(fileName, header=isNew, index=False, mode="w" if isNew else "a")
 
+def get_dataset(wildcards):
+    return {
+        "left": os.path.join(config["dataDir"], wildcards.dataset, "left.csv"),
+        "right": os.path.join(config["dataDir"], wildcards.dataset, "right.csv"),
+        "gt": os.path.join(config["dataDir"], wildcards.dataset, "gt.csv")
+    }
+
 rule autofj_benchmark:
     # For each benchmark dataset:
     #     1. Load left, right and ground truth tables
     #     2. Feed them to the script that run the benchmark
     input: 
-        left = "src/autofj/benchmark/{dataset}/left.csv",
-        right = "src/autofj/benchmark/{dataset}/right.csv",
-        gt = "src/autofj/benchmark/{dataset}/gt.csv",
+        unpack(get_dataset)
     output: "{resultDir}/{dataset}/{dataset}_{bm_pipeline}_model.pkl"
     shell:
         "python scripts/autofj_benchmark.py autofj-benchmark-cv {input.left} {input.right} {input.gt} {wildcards.resultDir} {wildcards.dataset} {wildcards.bm_pipeline}"

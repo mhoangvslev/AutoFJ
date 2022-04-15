@@ -56,6 +56,10 @@ def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline):
         except ValueError:
             df = pd.DataFrame(result, index=[0])
         
+        df["gt_size"] = len(y_test if category == "test_scores" else y_train) 
+        df["l_size"] = len(X_test[0] if category == "test_scores" else X_train[0]) 
+        df["r_size"] = len(X_test[1] if category == "test_scores" else X_train[1]) 
+        
         filePath = os.path.join(result_dir, dataset, bm_pipeline)
         pathlib.Path(filePath).mkdir(parents=True, exist_ok=True)
         df.to_csv(os.path.join(filePath, f"{category}.csv"))
