@@ -38,17 +38,14 @@ def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline):
         results = cross_validate(model, X, y, id_column="id", on=["title"], cv=5, scorer=model.evaluate, stable_left=True)
     else:
         splitRate = float(bm_pipeline) * 0.01
-        train, test = train_test_split(X, y, train_size=splitRate, shuffle=False, stable_left=True)
-
-        X_train, y_train = train
-        X_test, y_test = test
+        (X_train, y_train), (X_test, y_test) = train_test_split(X, y, train_size=splitRate, shuffle=False, stable_left=True)
 
         results = {}
 
-        model.fit(X_train, y_train, id_column="id", on=["title"])
-        results['train_scores'] = model.evaluate(y_train, model.train_results_)
-        y_pred = model.predict(X_test, id_column="id", on=["title"])
-        results["test_scores"] = model.evaluate(y_test, y_pred)
+        model.fit(X_train, id_column="id", on=["title"])
+        results['train_scores'] = model.evaluate(y, model.train_results_)
+        y_pred = model.predict(X, id_column="id", on=["title"])
+        results["test_scores"] = model.evaluate(y, y_pred)
 
     for category, result in results.items():
         try:
