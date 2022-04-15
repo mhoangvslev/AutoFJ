@@ -243,7 +243,14 @@ class AutoFJPredictor(object):
         self.cache_dir = TemporaryDirectory().name if name is None else f"tmp_{name}"
         self.jf_space = AutoFJJoinFunctionSpacePred(self.uoc, n_jobs=self.n_jobs, verbose=self.verbose, cache_dir=self.cache_dir)
         self.join_functions = list(map(lambda x: x.name, self.jf_space.join_functions))
-
+        
+        self.candidate_thresholds = {}
+        for jf, threshold in self.uoc:
+            if self.candidate_thresholds.get(jf) is None:
+                self.candidate_thresholds[jf] = []
+            if threshold not in self.candidate_thresholds[jf]:
+                self.candidate_thresholds[jf].append(threshold)
+        
     def keep_min_distance(self, LR_distance):
         # for each rid only keep lid with the smallest distance
         LR_small = {}
@@ -272,20 +279,6 @@ class AutoFJPredictor(object):
                 "distance": weighted_dist
             })
         return LL_w
-
-    def scale_candidate_thresholds(self, unscaled_thresholds):
-        """Scale candidate thresholds for each join function such that the
-        threshold is in the range of [min, max] of LR distance.
-        """
-        candidate_thresholds = {}
-        unscaled_thresholds = np.array(unscaled_thresholds)
-
-        for jf in self.join_functions:
-            max_d = self.LR_distance[jf]["distance"].values.max()
-            min_d = self.LR_distance[jf]["distance"].values.min()
-            cand_thresh = unscaled_thresholds * (max_d - min_d) + min_d
-            candidate_thresholds[jf] = set(cand_thresh.tolist())
-        return candidate_thresholds  
     
     def groupby_rid(self, LL_distance):
         """Group the distance table by rid. lids and distance for one rid will
@@ -300,6 +293,70 @@ class AutoFJPredictor(object):
             LL_dict = {keys[i]: values[i] for i in range(len(values))}
             LL_group[config] = LL_dict
         return LL_group
+
+    def precompute_precision(self):
+        precision = {}
+        for jf in self.join_functions:
+            LL = self.LL_distance[jf]
+            LR = self.LR_distance[jf]
+            for thresh in self.candidate_thresholds[jf]:
+                prec = {}
+
+                for lid, rid, d in LR.values:
+                    if d > thresh:
+                        continue
+                    # compute precision as 1/ #L-L joins
+                    num_LL_joins = self.get_num_LL_joins(LL, lid, thresh)
+                    prec[rid] = (lid, 1 / num_LL_joins)
+
+                precision[(jf, thresh)] = prec
+
+        return precision
+
+    def get_num_LL_joins(self, LL, proxy, thresh):
+        """ Number of L-L joins of proxy (the l record closest to each R),
+        which is the number of L records that have distance smaller than
+        2 * threshold to the proxy"""
+        if proxy not in LL:
+            return 1
+        else:
+            lid_df = LL[proxy]
+            mask = lid_df["distance"] <= 2 * thresh
+            num_proxy_joins = mask.sum() + 1
+            return num_proxy_joins
+    
+    def update_selection(self, config):
+        """Updated selected join configuration"""
+        self.running_configs.append(config)
+
+        for r, (l, p) in self.precision_cache[config].items():
+            if r in self.running_l_cands:
+                l_cands = self.running_l_cands[r]
+                old_p = self.running_local_prec[r]
+
+                if p > old_p:
+                    self.running_local_prec[r] = p
+                    self.running_LR_joins[r] = l
+                    delta_TP = p - old_p
+                else:
+                    delta_TP = 0
+
+                if l in l_cands:
+                    delta_n_joins = 0
+                else:
+                    self.running_l_cands[r].add(l)
+                    delta_n_joins = 1
+            else:
+                self.running_l_cands[r] = {l}
+                self.running_local_prec[r] = p
+                self.running_LR_joins[r] = l
+                delta_TP = p
+                delta_n_joins = 1
+
+            self.running_TP += delta_TP
+            self.running_n_joins += delta_n_joins
+
+        self.LR_joins = [(l, r) for r, l in self.running_LR_joins.items()]
 
     def join(self, 
         left_table: pd.DataFrame, 
@@ -352,25 +409,44 @@ class AutoFJPredictor(object):
         
         self.LL_distance = self.groupby_rid(self.LL_distance)
         self.LR_distance = self.keep_min_distance(self.LR_distance)
-        
-        left_idx = []
-        right_idx = []
 
-        # Where the magic happens
-        uoc_df = pd.DataFrame(self.uoc, columns=["join_function", "threshold"])
-        for jf, distance_df in self.LR_distance.items():
-            threshold = uoc_df[uoc_df["join_function"] == jf]["threshold"].values
-            valid = distance_df["distance"].apply(lambda x: any(x <= threshold))
-            LR_joins = distance_df[valid]
-            left_idx.extend(LR_joins["autofj_id_l"].values)
-            right_idx.extend(LR_joins["autofj_id_r"].values)
+        self.running_l_cands = {}
+        self.running_local_prec = {}
+        self.running_configs = []
+        self.running_LR_joins = {}
+        self.running_n_joins = 0
+        self.running_TP = 0
+
+        self.LR_joins = None
+
+        self.precision_cache = self.precompute_precision()
+
+        for config in self.uoc:
+            self.update_selection(config)
+
+            
+            # Where the magic happens
+            # uoc_df = pd.DataFrame(self.uoc, columns=["join_function", "threshold"])
+            # for jf, distance_df in self.LR_distance.items():
+            #     threshold = uoc_df[uoc_df["join_function"] == jf]["threshold"].values
+            #     valid = distance_df["distance"].apply(lambda x: any(x <= threshold))
+            #     LR_joins = distance_df[valid]
+            #     left_idx.extend(LR_joins["autofj_id_l"].values)
+            #     right_idx.extend(LR_joins["autofj_id_r"].values)
+
+        if self.LR_joins is None:
+            print("Warning: The precision target cannot be achieved.",
+                  "Try a lower precision target or a larger space of join functions,",
+                  "distance thresholds and column weights.")
+            return pd.DataFrame(columns=[c+"_l" for c in left_table.columns]+
+                                            [c+"_r" for c in right_table.columns])
 
         # merge with original left and right tables
+        left_idx = [l for l, r in self.LR_joins]
+        right_idx = [r for l, r in self.LR_joins]
         L = left_table.iloc[left_idx].add_suffix("_l").reset_index(drop=True)
         R = right_table.iloc[right_idx].add_suffix("_r").reset_index(drop=True)
-        result = pd.concat([L, R], axis=1).drop_duplicates().sort_values(by=id_column + "_r")
-
-        return result    
+        return pd.concat([L, R], axis=1).drop_duplicates().sort_values(by=id_column + "_r")
 
 class AutoFJKFold(KFold):
     """KFold implementation for AutoFJ dataset.
@@ -417,67 +493,6 @@ class AutoFJKFold(KFold):
             train = (l_train, r_train), gt_train
             test = (l_test, r_test), gt_test
             yield train, test
-
-def train_test_split(*arrays, test_size=None, train_size=None, random_state=None, shuffle=True, stratify=None, stable_left=False):
-    (left, right), gt = arrays
-    if shuffle:
-        left = shuffle_data(left.copy(deep=True), random_state=random_state)
-        right = shuffle_data(right.copy(deep=True), random_state=random_state)
-    
-    if test_size is None and train_size is None:
-        test_size = 0.25
-
-    if train_size is None:
-        train_size = 1 - test_size
-    elif test_size is None:
-        test_size = 1 - train_size
-
-    l_split_index = int(train_size * len(left))
-    r_split_index = int(train_size * len(right))
-
-    if stable_left: l_train = l_test = left
-    else: l_train, l_test = left.iloc[:l_split_index], left.iloc[l_split_index:]
-
-    r_train, r_test = right.iloc[:r_split_index], right.iloc[r_split_index:]
-
-    gt_train = gt[ gt['id_l'].isin(l_train['id'].values) & gt['id_r'].isin(r_train['id'].values)]
-    gt_test = gt[ gt['id_l'].isin(l_test['id'].values) & gt['id_r'].isin(r_test['id'].values)]
-
-    train = (l_train, r_train), gt_train
-    test = (l_test, r_test), gt_test
-
-    return train, test
-
-def cross_validate(model, X, y, id_column, on, cv=5, shuffle=False, random_state=None, scorer=None, stable_left=False):
-    kfold = AutoFJKFold(n_splits=cv, random_state=random_state, shuffle=shuffle)
-    result = {
-        "train_times": [],
-        "test_times": [],
-        "train_scores": [],
-        "test_scores": [],
-    }
-
-    if scorer is None: scorer = model.evaluate
-        
-    for train, test in tqdm(kfold.split(X, y, stable_left=stable_left), total=cv, unit="fold"):
-        X_train, y_train = train
-        X_test, y_test = test
-
-        trainBegin = time()
-        model.fit(X_train, y_train, id_column=id_column, on=on)
-        trainEnd = time()
-
-        result["train_times"].append(trainEnd-trainBegin)
-        result["train_scores"].append(scorer(y_train, model.train_results_))
-
-        testBegin = time()
-        y_pred = model.predict(X_test, id_column=id_column, on=on)
-        testEnd = time()
-
-        result["test_times"].append(testEnd-testBegin)
-        result["test_scores"].append(scorer(y_test, y_pred))
-
-    return result
 class AutoFJ(BaseEstimator):
     def __init__(self,
                  precision_target=0.9,
@@ -572,3 +587,75 @@ class AutoFJ(BaseEstimator):
             'recall': lambda y_true, y_pred, **kwargs: self.evaluate(y_true, y_pred, **kwargs)['recall'],
             'fscore': lambda y_true, y_pred, **kwargs: self.evaluate(y_true, y_pred, **kwargs)['precision'],
         }
+
+def train_test_split(*arrays, test_size=None, train_size=None, random_state=None, shuffle=True, stratify=None, stable_left=False):
+    (left, right), gt = arrays
+    if shuffle:
+        left = shuffle_data(left.copy(deep=True), random_state=random_state)
+        right = shuffle_data(right.copy(deep=True), random_state=random_state)
+    
+    if test_size is None and train_size is None:
+        test_size = 0.25
+
+    if train_size is None:
+        train_size = 1 - test_size
+    elif test_size is None:
+        test_size = 1 - train_size
+
+    if train_size == 1:
+        print("WARNING: when train-size is 100%, train set and test set are identical...")
+        train = test = (left, right), gt
+        return train, test
+
+    l_split_index = int(train_size * len(left))
+    r_split_index = int(train_size * len(right))
+
+    if stable_left: l_train = l_test = left
+    else: l_train, l_test = left.iloc[:l_split_index], left.iloc[l_split_index:]
+
+    r_train, r_test = right.iloc[:r_split_index], right.iloc[r_split_index:]
+
+    gt_train = gt[ gt['id_l'].isin(l_train['id'].values) & gt['id_r'].isin(r_train['id'].values)]
+    gt_test = gt[ gt['id_l'].isin(l_test['id'].values) & gt['id_r'].isin(r_test['id'].values)]
+
+    train = (l_train, r_train), gt_train
+    test = (l_test, r_test), gt_test
+
+    return train, test
+
+def cross_validate(
+    model: AutoFJ, 
+    X: Tuple[pd.DataFrame, pd.DataFrame], 
+    y: pd.DataFrame, 
+    id_column: str, on: List[str], 
+    cv=5, shuffle=False, random_state=None, scorer=None, stable_left=False
+):
+    kfold = AutoFJKFold(n_splits=cv, random_state=random_state, shuffle=shuffle)
+    result = {
+        "train_times": [],
+        "test_times": [],
+        "train_scores": [],
+        "test_scores": [],
+    }
+
+    if scorer is None: scorer = model.evaluate
+        
+    for train, test in tqdm(kfold.split(X, y, stable_left=stable_left), total=cv, unit="fold"):
+        X_train, y_train = train
+        X_test, y_test = test
+
+        trainBegin = time()
+        model.fit(X_train, y_train, id_column=id_column, on=on)
+        trainEnd = time()
+
+        result["train_times"].append(trainEnd-trainBegin)
+        result["train_scores"].append(scorer(y_train, model.train_results_))
+
+        testBegin = time()
+        y_pred = model.predict(X_test, id_column=id_column, on=on)
+        testEnd = time()
+
+        result["test_times"].append(testEnd-testBegin)
+        result["test_scores"].append(scorer(y_test, y_pred))
+
+    return result

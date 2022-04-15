@@ -21,7 +21,7 @@ rule autofj_benchmark_summary:
         expand(
             "{{resultDir}}/{dataset}/{dataset}_{bm_pipeline}_model.pkl",
             dataset=sorted(os.listdir(config["dataDir"])),
-            bm_pipeline=["90", "75", "50", "25", "cv"],
+            bm_pipeline=["100", "90", "75", "50", "25", "cv"],
         )
     output: "{resultDir}/cross_validation_scores.csv"
     run:
