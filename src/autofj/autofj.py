@@ -636,6 +636,12 @@ def cross_validate(
         "test_times": [],
         "train_scores": [],
         "test_scores": [],
+        "gt_size_train": [],
+        "l_size_train": [],
+        "r_size_train": [],
+        "gt_size_train": [],
+        "l_size_train": [],
+        "r_size_train": []
     }
 
     if scorer is None: scorer = model.evaluate
@@ -657,5 +663,9 @@ def cross_validate(
 
         result["test_times"].append(testEnd-testBegin)
         result["test_scores"].append(scorer(y_test, y_pred))
+
+        result["gt_size_test"], result["gt_size_train"] = len(y_test), len(y_train) 
+        result["l_size_test"], result["l_size_train"] = len(X_test[0]), len(X_train[0]) 
+        result["r_size_test"], result["r_size_train"] = len(X_test[1]), len(X_train[1])
 
     return result

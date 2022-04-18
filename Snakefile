@@ -19,32 +19,29 @@ rule all:
 rule autofj_benchmark_summary:
     input: 
         expand(
-            "{{resultDir}}/{dataset}/{dataset}_{bm_pipeline}_model.pkl",
+            "{{resultDir}}/{dataset}/summary_{bm_pipeline}.csv",
             dataset=sorted(os.listdir(config["dataDir"])),
             bm_pipeline=["100", "90", "75", "50", "25", "cv"],
         )
     output: "{resultDir}/cross_validation_scores.csv"
     run:
-        for model in input:
-            homeDir = os.path.dirname(model)
+        for summaryFile in input:
+            homeDir = os.path.dirname(summaryFile)
             dataset = os.path.basename(homeDir)
-            modelName = os.path.basename(model)
+            summary_fn = os.path.basename(summaryFile)
 
-            bm_pipeline = re.sub(r'\w+_(\w+)_model\.pkl', r'\1', modelName)
+            bm_pipeline = re.sub(r'\w+_(\w+)\.csv', r'\1', summary_fn)
 
-            for phase in ["train", "test"]:
-                df = pd.read_csv(os.path.join(homeDir, f"{bm_pipeline}", f"{phase}_scores.csv"))
-                df.drop("Unnamed: 0", axis=1, inplace=True)
-                df["dataset"] = dataset
-                df["phase"] = phase
+            df = pd.read_csv(summaryFile)
+            df["dataset"] = dataset
 
-                if bm_pipeline == "cv":
-                    fileName = f"{wildcards.resultDir}/cross_validation_scores.csv"
-                else:
-                    df["trainSize"] = bm_pipeline
-                    fileName = f"{wildcards.resultDir}/scalability_scores.csv"
-                isNew = not os.path.exists(fileName)
-                df.to_csv(fileName, header=isNew, index=False, mode="w" if isNew else "a")
+            if bm_pipeline == "cv":
+                fileName = f"{wildcards.resultDir}/cross_validation_scores.csv"
+            else:
+                df["trainSize"] = bm_pipeline
+                fileName = f"{wildcards.resultDir}/scalability_scores.csv"
+            isNew = not os.path.exists(fileName)
+            df.to_csv(fileName, header=isNew, index=False, mode="w" if isNew else "a")                
 
 def get_dataset(wildcards):
     return {
@@ -59,6 +56,6 @@ rule autofj_benchmark:
     #     2. Feed them to the script that run the benchmark
     input: 
         unpack(get_dataset)
-    output: "{resultDir}/{dataset}/{dataset}_{bm_pipeline}_model.pkl"
+    output: "{resultDir}/{dataset}/summary_{bm_pipeline}.csv"
     shell:
         "python scripts/autofj_benchmark.py autofj-benchmark-cv {input.left} {input.right} {input.gt} {wildcards.resultDir} {wildcards.dataset} {wildcards.bm_pipeline}"
