@@ -183,8 +183,7 @@ class AutoFJJoinFunction(object):
         X_pre = None
         if cache_path is not None and os.path.exists(cache_path):
             try:
-                with open(cache_path, "rb") as f:
-                    X_pre = pickle.load(f)
+                X_pre = pickle.load(open(cache_path, "rb"))
             except:
                 X_pre = produce()
         else: X_pre = produce()
@@ -214,8 +213,7 @@ class AutoFJJoinFunction(object):
         X_pre_token = None
         if cache_path is not None and os.path.exists(cache_path):
             try:
-                with open(cache_path, "rb") as f:
-                    X_pre_token = pickle.load(f)
+                X_pre_token = pickle.load(open(cache_path, "rb"))
             except:
                 X_pre_token = produce()
         else: X_pre_token = produce()
@@ -245,8 +243,7 @@ class AutoFJJoinFunction(object):
         token_weights = None
         if cache_path is not None and os.path.exists(cache_path):
             try:
-                with open(cache_path, "rb") as f:
-                    token_weights = pickle.load(f)
+                token_weights = pickle.load(open(cache_path, "rb"))
             except:
                 token_weights = produce()
         else: token_weights = produce()

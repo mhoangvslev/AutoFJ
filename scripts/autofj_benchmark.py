@@ -20,7 +20,8 @@ def cli():
 @click.argument("result-dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.argument("dataset", type=click.STRING)
 @click.argument("bm_pipeline", type=click.STRING)
-def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline):
+@click.argument("attempt", type=click.STRING)
+def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline, attempt):
 
     tmpDirs = glob("tmp*", recursive=False)
     for tmpDir in tmpDirs: 
@@ -60,11 +61,11 @@ def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline):
     test_df.columns = [ f"{col}_test" for col in test_df.columns ]
     df = pd.concat([df, train_df, test_df], axis=1)
 
-    filePath = os.path.join(result_dir, dataset)
+    filePath = os.path.join(result_dir, dataset, attempt)
     pathlib.Path(filePath).mkdir(parents=True, exist_ok=True)
     df.to_csv(os.path.join(filePath, f"summary_{bm_pipeline}.csv"), index=False)
 
-    model.save_model(os.path.join(result_dir, dataset, f"{dataset}_{bm_pipeline}_model.pkl"))
+    model.save_model(os.path.join(filePath, f"{dataset}_{bm_pipeline}_model.pkl"))
 
 if __name__ == '__main__':
     cli()

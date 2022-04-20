@@ -19,21 +19,25 @@ rule all:
 rule autofj_benchmark_summary:
     input: 
         expand(
-            "{{resultDir}}/{dataset}/summary_{bm_pipeline}.csv",
+            "{{resultDir}}/{dataset}/{attempt}/summary_{bm_pipeline}.csv",
             dataset=sorted(os.listdir(config["dataDir"])),
+            attempt=range(3),
             bm_pipeline=["100", "90", "75", "50", "25", "cv"],
         )
     output: "{resultDir}/cross_validation_scores.csv"
     run:
         for summaryFile in input:
-            homeDir = os.path.dirname(summaryFile)
-            dataset = os.path.basename(homeDir)
-            summary_fn = os.path.basename(summaryFile)
+            pattern = r"/(\w+)/(\d+)/summary_(\w+).csv"
+            match = re.search(pattern, summaryFile)
+            dataset = match.group(1)
+            attempt = match.group(2)
+            bm_pipeline = match.group(3)
 
-            bm_pipeline = re.sub(r'\w+_(\w+)\.csv', r'\1', summary_fn)
+            summary_fn = os.path.basename(summaryFile)
 
             df = pd.read_csv(summaryFile)
             df["dataset"] = dataset
+            df["attempt"] = attempt
 
             if bm_pipeline == "cv":
                 fileName = f"{wildcards.resultDir}/cross_validation_scores.csv"
@@ -56,6 +60,6 @@ rule autofj_benchmark:
     #     2. Feed them to the script that run the benchmark
     input: 
         unpack(get_dataset)
-    output: "{resultDir}/{dataset}/summary_{bm_pipeline}.csv"
+    output: "{resultDir}/{dataset}/{attempt}/summary_{bm_pipeline}.csv"
     shell:
-        "python scripts/autofj_benchmark.py autofj-benchmark-cv {input.left} {input.right} {input.gt} {wildcards.resultDir} {wildcards.dataset} {wildcards.bm_pipeline}"
+        "python scripts/autofj_benchmark.py autofj-benchmark-cv {input.left} {input.right} {input.gt} {wildcards.resultDir} {wildcards.dataset} {wildcards.bm_pipeline} {wildcards.attempt}"
