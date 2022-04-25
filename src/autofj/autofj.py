@@ -2,7 +2,7 @@ import pickle
 import shutil
 from statistics import mode
 from tempfile import TemporaryDirectory
-from time import sleep, time
+from time import time, time_ns
 from typing import Generator, List, Optional, Tuple, Union
 
 from sklearn.model_selection import KFold
@@ -513,7 +513,8 @@ class AutoFJ(BaseEstimator):
 
     def fit(self, X: Tuple[pd.DataFrame, pd.DataFrame], y: pd.DataFrame=None, **kwargs):
         left, right = X
-        dataHash = (
+
+        dataHash = str(time_ns()) if kwargs.get("no_cache") else (
             hash_pandas_object(left).sum() + 
             hash_pandas_object(right).sum() + 
             0 if y is None else hash_pandas_object(y).sum()
@@ -544,7 +545,7 @@ class AutoFJ(BaseEstimator):
         return autofj
 
     def predict(self, X, **kwargs):
-        dataHash = np.sum([hash_pandas_object(df).sum() for df in X])
+        dataHash = str(time_ns()) if kwargs.get("no_cache") else np.sum([hash_pandas_object(df).sum() for df in X])
         predictor = AutoFJPredictor(
             self.selected_join_config_, 
             self.selected_column_weights_, 
