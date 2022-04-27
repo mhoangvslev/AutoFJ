@@ -1,25 +1,34 @@
+from collections import defaultdict
+import imp
+from itertools import product
+import numbers
 import pickle
 import shutil
 from statistics import mode
 from tempfile import TemporaryDirectory
 from time import time, time_ns
 from typing import Generator, List, Optional, Tuple, Union
-
-from sklearn.model_selection import KFold
-from sklearn.utils import shuffle as shuffle_data
+from joblib import Parallel, delayed
+import os
+import numpy as np
 from tqdm import tqdm
+import pandas as pd
+
+from sklearn import clone
+from sklearn.metrics import check_scoring
+from sklearn.metrics._scorer import _check_multimetric_scoring
+import sklearn.model_selection as sklearn_ms
+from sklearn.utils import shuffle as shuffle_data
+from sklearn.base import ClassifierMixin, BaseEstimator
+from sklearn.model_selection._validation import _warn_about_fit_failures, _fit_and_score, _insert_error_scores
+
 from .join_function_space.autofj_join_function_space import AutoFJJoinFunctionSpace, AutoFJJoinFunctionSpacePred
 from .blocker.autofj_blocker import AutoFJBlocker
 from .optimizer.autofj_multi_column_greedy_algorithm import \
     AutoFJMulticolGreedyAlgorithm
-import pandas as pd
 from pandas.util import hash_pandas_object
 from .utils import print_log
-import os
 from .negative_rule import NegativeRule
-import numpy as np
-
-from sklearn.base import BaseEstimator
 
 import multiprocessing
 multiprocessing.set_start_method("fork") # Fork by default, spawn for use with GPU
@@ -448,7 +457,7 @@ class AutoFJPredictor(object):
         R = right_table.iloc[right_idx].add_suffix("_r").reset_index(drop=True)
         return pd.concat([L, R], axis=1).drop_duplicates().sort_values(by=id_column + "_r")
 
-class AutoFJKFold(KFold):
+class KFold(sklearn_ms.KFold):
     """KFold implementation for AutoFJ dataset.
 
     Args:
@@ -493,7 +502,8 @@ class AutoFJKFold(KFold):
             train = (l_train, r_train), gt_train
             test = (l_test, r_test), gt_test
             yield train, test
-class AutoFJ(BaseEstimator):
+            
+class AutoFJ(ClassifierMixin, BaseEstimator):
     def __init__(self,
                  precision_target=0.9,
                  join_function_space="autofj_sm",
@@ -624,6 +634,164 @@ def train_test_split(*arrays, test_size=None, train_size=None, random_state=None
 
     return train, test
 
+class GridSearchCV(sklearn_ms.GridSearchCV):
+    def fit(self, X, y=None, *, groups=None, **fit_params):
+        estimator = self.estimator
+        refit_metric = "score"
+
+        if callable(self.scoring):
+            scorers = self.scoring
+        elif self.scoring is None or isinstance(self.scoring, str):
+            scorers = check_scoring(self.estimator, self.scoring)
+        else:
+            scorers = _check_multimetric_scoring(self.estimator, self.scoring)
+            self._check_refit_for_multimetric(scorers)
+            refit_metric = self.refit
+
+        if not isinstance(self.cv, numbers.Integral):
+            raise ValueError('the parameter cv should be a number!')
+            
+        cv_orig = KFold(n_splits=self.cv)
+        n_splits = cv_orig.get_n_splits(X, y, groups)
+
+        base_estimator = clone(self.estimator)
+
+        parallel = Parallel(n_jobs=self.n_jobs, pre_dispatch=self.pre_dispatch)
+
+        fit_and_score_kwargs = dict(
+            scorer=scorers,
+            fit_params=fit_params,
+            return_train_score=self.return_train_score,
+            return_n_test_samples=True,
+            return_times=True,
+            return_parameters=False,
+            error_score=self.error_score,
+            verbose=self.verbose,
+        )
+        results = {}
+        with parallel:
+            all_candidate_params = []
+            all_out = []
+            all_more_results = defaultdict(list)
+
+            def evaluate_candidates(candidate_params, cv=None, more_results=None):
+                cv = cv or cv_orig
+                candidate_params = list(candidate_params)
+                n_candidates = len(candidate_params)
+
+                if self.verbose > 0:
+                    print(
+                        "Fitting {0} folds for each of {1} candidates,"
+                        " totalling {2} fits".format(
+                            n_splits, n_candidates, n_candidates * n_splits
+                        )
+                    )
+
+                out = parallel(
+                    delayed(_fit_and_score)(
+                        clone(base_estimator),
+                        X,
+                        y,
+                        train=train,
+                        test=test,
+                        parameters=parameters,
+                        split_progress=(split_idx, n_splits),
+                        candidate_progress=(cand_idx, n_candidates),
+                        **fit_and_score_kwargs,
+                    )
+                    for (cand_idx, parameters), (split_idx, (train, test)) in product(
+                        enumerate(candidate_params), enumerate(cv.split(X, y, groups))
+                    )
+                )
+
+                if len(out) < 1:
+                    raise ValueError(
+                        "No fits were performed. "
+                        "Was the CV iterator empty? "
+                        "Were there no candidates?"
+                    )
+                elif len(out) != n_candidates * n_splits:
+                    raise ValueError(
+                        "cv.split and cv.get_n_splits returned "
+                        "inconsistent results. Expected {} "
+                        "splits, got {}".format(n_splits, len(out) // n_candidates)
+                    )
+
+                _warn_about_fit_failures(out, self.error_score)
+
+                # For callable self.scoring, the return type is only know after
+                # calling. If the return type is a dictionary, the error scores
+                # can now be inserted with the correct key. The type checking
+                # of out will be done in `_insert_error_scores`.
+                if callable(self.scoring):
+                    _insert_error_scores(out, self.error_score)
+
+                all_candidate_params.extend(candidate_params)
+                all_out.extend(out)
+
+                if more_results is not None:
+                    for key, value in more_results.items():
+                        all_more_results[key].extend(value)
+
+                nonlocal results
+                results = self._format_results(
+                    all_candidate_params, n_splits, all_out, all_more_results
+                )
+
+                return results
+
+            self._run_search(evaluate_candidates)
+
+            # multimetric is determined here because in the case of a callable
+            # self.scoring the return type is only known after calling
+            first_test_score = all_out[0]["test_scores"]
+            self.multimetric_ = isinstance(first_test_score, dict)
+
+            # check refit_metric now for a callabe scorer that is multimetric
+            if callable(self.scoring) and self.multimetric_:
+                self._check_refit_for_multimetric(first_test_score)
+                refit_metric = self.refit
+
+        # For multi-metric evaluation, store the best_index_, best_params_ and
+        # best_score_ iff refit is one of the scorer names
+        # In single metric evaluation, refit_metric is "score"
+        if self.refit or not self.multimetric_:
+            self.best_index_ = self._select_best_index(
+                self.refit, refit_metric, results
+            )
+            if not callable(self.refit):
+                # With a non-custom callable, we can select the best score
+                # based on the best index
+                self.best_score_ = results[f"mean_test_{refit_metric}"][
+                    self.best_index_
+                ]
+            self.best_params_ = results["params"][self.best_index_]
+
+        if self.refit:
+            # we clone again after setting params in case some
+            # of the params are estimators as well.
+            self.best_estimator_ = clone(
+                clone(base_estimator).set_params(**self.best_params_)
+            )
+            refit_start_time = time.time()
+            if y is not None:
+                self.best_estimator_.fit(X, y, **fit_params)
+            else:
+                self.best_estimator_.fit(X, **fit_params)
+            refit_end_time = time.time()
+            self.refit_time_ = refit_end_time - refit_start_time
+
+            if hasattr(self.best_estimator_, "feature_names_in_"):
+                self.feature_names_in_ = self.best_estimator_.feature_names_in_
+
+        # Store the only scorer not as a dict for single metric evaluation
+        self.scorer_ = scorers
+
+        self.cv_results_ = results
+        self.n_splits_ = n_splits
+
+        return self
+
 def cross_validate(
     model: AutoFJ, 
     X: Tuple[pd.DataFrame, pd.DataFrame], 
@@ -631,7 +799,7 @@ def cross_validate(
     id_column: str, on: List[str], 
     cv=5, shuffle=False, random_state=None, scorer=None, stable_left=False
 ):
-    kfold = AutoFJKFold(n_splits=cv, random_state=random_state, shuffle=shuffle)
+    kfold = KFold(n_splits=cv, random_state=random_state, shuffle=shuffle)
     result = {
         "train_times": [],
         "test_times": [],
@@ -652,14 +820,14 @@ def cross_validate(
         X_test, y_test = test
 
         trainBegin = time()
-        model.fit(X_train, y_train, id_column=id_column, on=on)
+        model.fit(X_train, y_train, id_column=id_column, on=on, no_cache=True)
         trainEnd = time()
 
         result["train_times"].append(trainEnd-trainBegin)
         result["train_scores"].append(scorer(y_train, model.train_results_))
 
         testBegin = time()
-        y_pred = model.predict(X_test, id_column=id_column, on=on)
+        y_pred = model.predict(X_test, id_column=id_column, on=on, no_cache=True)
         testEnd = time()
 
         result["test_times"].append(testEnd-testBegin)
