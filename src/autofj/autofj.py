@@ -29,9 +29,6 @@ from .optimizer.autofj_multi_column_greedy_algorithm import \
 from pandas.util import hash_pandas_object
 from .utils import print_log
 from .negative_rule import NegativeRule
-
-import multiprocessing
-multiprocessing.set_start_method("fork") # Fork by default, spawn for use with GPU
 class AutoFJTrainer(object):
     """
     AutoFJ automatically produces record pairs that approximately match in 
@@ -524,10 +521,10 @@ class AutoFJ(ClassifierMixin, BaseEstimator):
     def fit(self, X: Tuple[pd.DataFrame, pd.DataFrame], y: pd.DataFrame=None, **kwargs):
         left, right = X
 
-        dataHash = str(time_ns()) if kwargs.get("no_cache") else (
+        dataHash = (
             hash_pandas_object(left).sum() + 
             hash_pandas_object(right).sum() + 
-            0 if y is None else hash_pandas_object(y).sum()
+            np.uint64(0) if y is None else hash_pandas_object(y).sum()
         )
 
         trainer = AutoFJTrainer(
@@ -555,7 +552,7 @@ class AutoFJ(ClassifierMixin, BaseEstimator):
         return autofj
 
     def predict(self, X, **kwargs):
-        dataHash = str(time_ns()) if kwargs.get("no_cache") else np.sum([hash_pandas_object(df).sum() for df in X])
+        dataHash = np.sum([hash_pandas_object(df).sum() for df in X])
         predictor = AutoFJPredictor(
             self.selected_join_config_, 
             self.selected_column_weights_, 
@@ -820,14 +817,14 @@ def cross_validate(
         X_test, y_test = test
 
         trainBegin = time()
-        model.fit(X_train, y_train, id_column=id_column, on=on, no_cache=True)
+        model.fit(X_train, y_train, id_column=id_column, on=on)
         trainEnd = time()
 
         result["train_times"].append(trainEnd-trainBegin)
         result["train_scores"].append(scorer(y_train, model.train_results_))
 
         testBegin = time()
-        y_pred = model.predict(X_test, id_column=id_column, on=on, no_cache=True)
+        y_pred = model.predict(X_test, id_column=id_column, on=on)
         testEnd = time()
 
         result["test_times"].append(testEnd-testBegin)

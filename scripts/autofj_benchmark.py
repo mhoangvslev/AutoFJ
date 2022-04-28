@@ -43,9 +43,9 @@ def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline, attem
 
         results = {}
 
-        model.fit(X_train, id_column="id", on=["title"], no_cache=True)
+        model.fit(X_train, id_column="id", on=["title"])
         results["train_scores"] = model.evaluate(y_train, model.train_results_) 
-        y_pred = model.predict(X, id_column="id", on=["title"], no_cache=True)
+        y_pred = model.predict(X, id_column="id", on=["title"])
         results["test_scores"] = model.evaluate(y, y_pred)
 
         results["gt_size_test"], results["gt_size_train"] = len(y_test), len(y_train) 

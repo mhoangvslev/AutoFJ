@@ -8,6 +8,7 @@ import pickle
 from pickle import UnpicklingError
 from ...utils import makedir
 
+AUTOFJ_NO_CACHE=(os.environ.get("AUTOFJ_NO_CACHE") is not None and os.environ.get("AUTOFJ_NO_CACHE"))
 
 class AutoFJJoinFunction(object):
     """Join function. A join function computes a distance score between a
@@ -173,6 +174,10 @@ class AutoFJJoinFunction(object):
             Preprocessed data.
         """
 
+        if AUTOFJ_NO_CACHE:
+            preprocessor = Preprocessor(self.preprocess_method)
+            return preprocessor.preprocess(X)
+
         def produce():
             preprocessor = Preprocessor(self.preprocess_method)
             res = preprocessor.preprocess(X)
@@ -202,6 +207,10 @@ class AutoFJJoinFunction(object):
         X_pre_token: pd.Series
             Data after preprocessing and tokenization
         """
+
+        if AUTOFJ_NO_CACHE:
+            tokenizer = Tokenizer(self.tokenize_method)
+            return tokenizer.tokenize(X_pre)
 
         def produce():
             tokenizer = Tokenizer(self.tokenize_method)
@@ -233,6 +242,11 @@ class AutoFJJoinFunction(object):
         token_weights: dict
             Token weights
         """
+
+        if AUTOFJ_NO_CACHE:
+            weight = TokenWeight(self.token_weight_method)
+            return weight.weight(X_pre_token)
+
         def produce():
             weight = TokenWeight(self.token_weight_method)
             res = weight.weight(X_pre_token)
