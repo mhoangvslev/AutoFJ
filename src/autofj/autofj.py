@@ -7,6 +7,7 @@ import shutil
 from statistics import mode
 from tempfile import TemporaryDirectory
 from time import time, time_ns
+from turtle import right
 from typing import Generator, List, Optional, Tuple, Union
 from joblib import Parallel, delayed
 import os
@@ -29,7 +30,57 @@ from .optimizer.autofj_multi_column_greedy_algorithm import \
 from pandas.util import hash_pandas_object
 from .utils import print_log
 from .negative_rule import NegativeRule
-class AutoFJTrainer(object):
+
+class AutoFJAbstract(object):
+    def __init__(self,
+                 precision_target=0.9,
+                 join_function_space="autofj_sm",
+                 distance_threshold_space=50,
+                 column_weight_space=10,
+                 blocker=None,
+                 n_jobs=-1,
+                 verbose=False,
+                 name=None
+    ):
+        pass
+
+    def join(self, 
+        left_table: pd.DataFrame, 
+        right_table: pd.DataFrame, 
+        id_column: str, 
+        on: Optional[Union[str, List[str]]]=None,
+    ):
+        pass
+
+    def compute_distance(self, 
+        left_table: pd.DataFrame, 
+        right_table: pd.DataFrame, 
+        id_column: str, 
+        on: Optional[Union[str, List[str]]]=None,
+    ):
+        pass
+
+    def preprocessing(self,
+        left_table: pd.DataFrame, 
+        right_table: pd.DataFrame
+    ):
+        # do blocking
+        if self.verbose:
+            print_log("Start blocking")
+        LL_blocked = self.blocker.block(left_table, left_table, "autofj_id")
+        LR_blocked = self.blocker.block(left_table, right_table, "autofj_id")
+
+        # remove equi-joins on LL
+        LL_blocked = LL_blocked[
+            LL_blocked["autofj_id_l"] != LL_blocked["autofj_id_r"]]
+
+        # learn and apply negative rules
+        nr = NegativeRule(left_table, right_table, "autofj_id")
+        nr.learn(LL_blocked)
+        LR_blocked = nr.apply(LR_blocked)
+
+        return LL_blocked, LR_blocked
+class AutoFJTrainer(AutoFJAbstract):
     """
     AutoFJ automatically produces record pairs that approximately match in 
     two tables L and R. It proceeds to configure suitable parameters 
@@ -116,6 +167,42 @@ class AutoFJTrainer(object):
         self.n_jobs = n_jobs if n_jobs > 0 else os.cpu_count()
         self.verbose = verbose
 
+    def compute_distance(self, left_table: pd.DataFrame, right_table: pd.DataFrame, id_column: str, on: Optional[Union[str, List[str]]] = None):
+        left = left_table.copy(deep=True)
+        right = right_table.copy(deep=True)
+
+        # create internal id columns (use internal ids)
+        left["autofj_id"] = range(len(left))
+        right["autofj_id"] = range(len(right))
+
+        # remove original ids
+        left.drop(columns=id_column, inplace=True)
+        right.drop(columns=id_column, inplace=True)
+
+        # get names of columns to be joined
+        if on is None:
+            on = sorted(list(set(left.columns).intersection(right.columns)))
+        elif isinstance(on, str):
+            on = [on + "autofj_id"]
+        elif isinstance(on, list):
+            on = on + ["autofj_id"]
+
+        left = left[on]
+        right = right[on]
+
+        LL_blocked, LR_blocked = self.preprocessing(left, right)
+
+        # create join function space
+        jf_space = AutoFJJoinFunctionSpace(self.join_function_space,n_jobs=self.n_jobs, verbose=self.verbose, cache_dir=self.cache_dir)
+
+        # compute distance
+        if self.verbose:
+            print_log("Start computing distances. Size of join function space: {}"
+                      .format(len(jf_space.join_functions)))
+
+        LL_distance, LR_distance = jf_space.compute_distance(left, right, LL_blocked, LR_blocked)
+        return LL_blocked, LR_blocked, LL_distance, LR_distance
+
     def join(self, 
         left_table: pd.DataFrame, 
         right_table: pd.DataFrame, 
@@ -150,55 +237,7 @@ class AutoFJTrainer(object):
                 with "_r"
         """
 
-        left = left_table.copy(deep=True)
-        right = right_table.copy(deep=True)
-
-        # create internal id columns (use internal ids)
-        left["autofj_id"] = range(len(left))
-        right["autofj_id"] = range(len(right))
-
-        # remove original ids
-        left.drop(columns=id_column, inplace=True)
-        right.drop(columns=id_column, inplace=True)
-
-        # get names of columns to be joined
-        if on is None:
-            on = sorted(list(set(left.columns).intersection(right.columns)))
-        elif isinstance(on, str):
-            on = [on + "autofj_id"]
-        elif isinstance(on, list):
-            on = on + ["autofj_id"]
-
-        left = left[on]
-        right = right[on]
-
-        # do blocking
-        if self.verbose:
-            print_log("Start blocking")
-        LL_blocked = self.blocker.block(left, left, "autofj_id")
-        LR_blocked = self.blocker.block(left, right, "autofj_id")
-
-        # remove equi-joins on LL
-        LL_blocked = LL_blocked[
-            LL_blocked["autofj_id_l"] != LL_blocked["autofj_id_r"]]
-
-        # learn and apply negative rules
-        nr = NegativeRule(left, right, "autofj_id")
-        nr.learn(LL_blocked)
-        LR_blocked = nr.apply(LR_blocked)
-
-        # create join function space
-        jf_space = AutoFJJoinFunctionSpace(self.join_function_space,n_jobs=self.n_jobs, verbose=self.verbose, cache_dir=self.cache_dir)
-
-        # compute distance
-        if self.verbose:
-            print_log("Start computing distances. Size of join function space: {}"
-                      .format(len(jf_space.join_functions)))
-
-        LL_distance, LR_distance = jf_space.compute_distance(left,
-                                                             right,
-                                                             LL_blocked,
-                                                             LR_blocked)
+        _, _, LL_distance, LR_distance = self.compute_distance(left_table, right_table, id_column, on)
 
         # run greedy algorithm
         if self.verbose:
@@ -233,7 +272,7 @@ class AutoFJTrainer(object):
         result = pd.concat([L, R], axis=1).sort_values(by=id_column + "_r")
         return result
 
-class AutoFJPredictor(object):
+class AutoFJPredictor(AutoFJAbstract):
     def __init__(self, uoc, column_weights, blocker=None, n_jobs=-1, verbose=False, name=None):
         if blocker is None:
             self.blocker = AutoFJBlocker(n_jobs=n_jobs)
@@ -364,12 +403,7 @@ class AutoFJPredictor(object):
 
         self.LR_joins = [(l, r) for r, l in self.running_LR_joins.items()]
 
-    def join(self, 
-        left_table: pd.DataFrame, 
-        right_table: pd.DataFrame, 
-        id_column: str, 
-        on: Optional[Union[str, List[str]]]=None, 
-    ):
+    def compute_distance(self, left_table: pd.DataFrame, right_table: pd.DataFrame, id_column: str, on: Optional[Union[str, List[str]]] = None):
         left = left_table.copy(deep=True)
         right = right_table.copy(deep=True)
 
@@ -385,30 +419,25 @@ class AutoFJPredictor(object):
         if on is None:
             on = sorted(list(set(left.columns).intersection(right.columns)))
         elif isinstance(on, str):
-            on = [on] + ["autofj_id"]
+            on = [on + "autofj_id"]
         elif isinstance(on, list):
             on = on + ["autofj_id"]
 
         left = left[on]
         right = right[on]
 
-        # do blocking
-        if self.verbose:
-            print_log("Start blocking")
-        
-        LL_blocked = self.blocker.block(left, left, "autofj_id")
-        LR_blocked = self.blocker.block(left, right, "autofj_id")
+        LL_blocked, LR_blocked = self.preprocessing(left, right)
+        LL_distance, LR_distance = self.jf_space.compute_distance(left, right, LL_blocked, LR_blocked)
+        return LL_blocked, LR_blocked, LL_distance, LR_distance
 
-        # remove equi-joins on LL
-        LL_blocked = LL_blocked[LL_blocked["autofj_id_l"] != LL_blocked["autofj_id_r"]]
-
-        # learn and apply negative rules
-        nr = NegativeRule(left, right, "autofj_id")
-        nr.learn(LL_blocked)
-        LR_blocked = nr.apply(LR_blocked)
-
+    def join(self, 
+        left_table: pd.DataFrame, 
+        right_table: pd.DataFrame, 
+        id_column: str, 
+        on: Optional[Union[str, List[str]]]=None, 
+    ):
         # Transform Union of Configs
-        self.LL_distance, self.LR_distance = self.jf_space.compute_distance(left, right, LL_blocked, LR_blocked)
+        _, _, self.LL_distance, self.LR_distance = self.compute_distance(left_table, right_table, id_column, on)
         self.LL_distance = self.get_weighted_distance(self.LL_distance, self.column_weights)
         self.LR_distance = self.get_weighted_distance(self.LR_distance, self.column_weights)
         self.join_functions = self.LR_distance.keys()
@@ -587,6 +616,20 @@ class AutoFJ(ClassifierMixin, BaseEstimator):
         except:
             fscore = np.nan
         return {'precision': precision, 'recall': recall, f'f{f_coef}-score': fscore}
+
+    def featurize(self, X, id_column):
+        trainer = AutoFJTrainer(
+            self.precision_target, 
+            self.join_function_space, 
+            self.distance_threshold_space, 
+            self.column_weight_space, 
+            self.blocker, 
+            self.n_jobs, self.verbose,
+            name=None
+        )
+
+        left, right = X
+        return trainer.compute_distance(left, right, id_column=id_column)
 
     def get_scorers(self):
         return {
