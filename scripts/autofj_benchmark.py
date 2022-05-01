@@ -31,8 +31,7 @@ def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline, attem
     right = pd.read_csv(right)
     gt = pd.read_csv(gt)
 
-    X = (left, right)
-    y = gt
+    X, y = (left, right), gt
 
     model = AutoFJ(precision_target=0.9, verbose=False, join_function_space="autofj_lg")
     if bm_pipeline == "cv":
@@ -40,13 +39,13 @@ def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline, attem
     else:
         splitRate = float(bm_pipeline) * 0.01
         (X_train, y_train), (X_test, y_test) = train_test_split(X, y, train_size=splitRate, shuffle=True, stable_left=True)
-
+        X_test, y_test = X, y
         results = {}
 
         model.fit(X_train, id_column="id", on=["title"])
         results["train_scores"] = model.evaluate(y_train, model.train_results_) 
-        y_pred = model.predict(X, id_column="id", on=["title"])
-        results["test_scores"] = model.evaluate(y, y_pred)
+        y_pred = model.predict(X_test, id_column="id", on=["title"])
+        results["test_scores"] = model.evaluate(y_test, y_pred)
 
         results["gt_size_test"], results["gt_size_train"] = len(y_test), len(y_train) 
         results["l_size_test"], results["l_size_train"] = len(X_test[0]), len(X_train[0]) 

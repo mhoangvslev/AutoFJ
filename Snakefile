@@ -11,7 +11,7 @@ rule all:
         #     4. 25% train rate
         #     5. 5-fold cross-validation
         expand(
-            "{resultDir}/cross_validation_scores.csv", 
+            "{resultDir}/scalability_scores.csv", 
             resultDir=config["resultDir"],
             phase=["train", "test"]
         )
@@ -22,9 +22,9 @@ rule autofj_benchmark_summary:
             "{{resultDir}}/{dataset}/{attempt}/summary_{bm_pipeline}.csv",
             dataset=sorted(os.listdir(config["dataDir"])),
             attempt=range(3),
-            bm_pipeline=["100", "90", "75", "50", "25", "cv"],
+            bm_pipeline=["100", "90", "75", "50", "25"], # Add "cv" if needed
         )
-    output: "{resultDir}/cross_validation_scores.csv"
+    output: "{resultDir}/scalability_scores.csv"
     run:
         for summaryFile in input:
             pattern = r"/(\w+)/(\d+)/summary_(\w+).csv"
