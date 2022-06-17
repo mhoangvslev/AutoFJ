@@ -9,9 +9,10 @@ from nltk.stem.porter import PorterStemmer
 import time
 from functools import partial
 import numpy as np
-from blocker import Blocker
-class AutoFJBlocker(Blocker):
-    """AutoFJ default Blocker
+from autofj_blocker import AutoFJBlocker
+
+class KnowMoreBlocker(AutoFJBlocker):
+    """KnowMoreBlocker default Blocker
 
     Parameters
     ----------
@@ -129,11 +130,6 @@ class AutoFJBlocker(Blocker):
         token_tf_map = collections.defaultdict(dict)
         three_gram = ngram.NGram(N=3)
 
-        doc_map = collections.defaultdict(int)
-
-        k1 = 1.2
-        b = 0.75
-
         # build token maps
         for lid, lvalue in left[["id", "value"]].values:
             if len(lvalue) == 0:
@@ -151,21 +147,11 @@ class AutoFJBlocker(Blocker):
 
             for token, count in counter.items():
                 token_tf_map[lid][token] = count / len(tokens)
-                doc_map[lid] = len(tokens)
-
-        avgl_d = np.average(doc_map.values())
-        # Update token maps to use Lucene BM25
-        for lid, d in token_tf_map.items():
-            for token, tf in d.items():
-                token_tf_map[lid][token] =  tf * (k1 + 1) /\
-                                            tf + (k1 * (1 - b + b * doc_map[lid]/avgl_d))
 
         # compute idf score
         token_idf_map = {}
         for token, lids in token_lid_map.items():
-            nq = len(lids) + 1
-            N = len(left)
-            token_idf_map[token] = math.log((N - nq + 0.5) / (nq + 0.5) + 1)
+            token_idf_map[token] = math.log(len(left) / (len(lids)+1))
         return token_lid_map, token_idf_map, token_tf_map
 
     def _get_candidates(self, right, token_lid_map, token_idf_map,
@@ -200,10 +186,8 @@ class AutoFJBlocker(Blocker):
             tokens = set(list(three_gram.split(rvalue)) + list(rvalue.split()))
             counter = collections.defaultdict(int)
 
-            # TF-IDF index
             for token in tokens:
                 for lid in token_lid_map[token]:
-
                     counter[lid] += token_idf_map[token] *\
                                     token_tf_map[lid][token]
 

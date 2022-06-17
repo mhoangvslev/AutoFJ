@@ -10,6 +10,7 @@ import spacy
 from transformers import BartTokenizer, BartModel
 from scipy.spatial.distance import euclidean
 import torch
+from dateutil.parser import parse as date_parse
 
 # global tokenizer
 # global model
@@ -123,6 +124,26 @@ def jaroDistance(x, y):
     d = 1 - jellyfish.jaro_winkler_similarity(x, y)
     return d
 
+def knowMoreDistance(x, y):
+    """Similarity as defined in KnowMore paper
+
+    Args:
+        x (any): left element
+        y (any): right element
+
+    Returns:
+        float: distance measurement
+    """
+    if type(x) == int or type(x) == bool:
+        return int(x == y)
+    # If datetime
+    try: 
+        date_x = list(date_parse(str(x)).timetuple())
+        date_y = list(date_parse(str(y)).timetuple())
+        return jaccardDistance(date_x, date_y)
+    except:
+        return cosineDistance(x, y)
+
 def embedDistance(x, y, embedding):
     x = embedding(x)
     y = embedding(y)
@@ -144,7 +165,6 @@ def cosineEmbedDistance(x, y, embedding):
     y = embedding(y)
     res = 1-torch.nn.CosineSimilarity(dim=1)(x, y)
     return res
-
 class DistanceFunction(object):
     """Distance function
 
@@ -183,6 +203,8 @@ class DistanceFunction(object):
             self.func = editDistance
         elif method == "jaroDistance":
             self.func = jaroDistance
+        elif method == "knowMoreDistance":
+            self.func = knowMoreDistance
         elif method == "containCosineDistance":
             self.func = containCosineDistance
         elif method == "containJaccardDistance":
