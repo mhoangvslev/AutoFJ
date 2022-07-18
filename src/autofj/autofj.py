@@ -593,9 +593,9 @@ class AutoFJ(ClassifierMixin, BaseEstimator):
         left, right = X
         return predictor.join(left, right, kwargs.get('id_column'), kwargs.get('on'))
 
-    def evaluate(self, y_true, y_pred, **kwargs):
-        gt_joins = y_true[["id_l", "id_r"]].values
-        pred_joins = y_pred[["id_l", "id_r"]].values
+    def evaluate(self, y_true: pd.DataFrame, y_pred: pd.DataFrame, **kwargs):
+        gt_joins = y_true.astype(str)[["id_l", "id_r"]].values
+        pred_joins = y_pred.astype(str)[["id_l", "id_r"]].values
 
         pred_set = {tuple(sorted(j)) for j in pred_joins}
         gt_set = {tuple(sorted(j)) for j in gt_joins}
@@ -850,7 +850,8 @@ def cross_validate(
         "r_size_train": [],
         "gt_size_train": [],
         "l_size_train": [],
-        "r_size_train": []
+        "r_size_train": [],
+        "fold": np.arange(1, cv+1, step=1).tolist()
     }
 
     if scorer is None: scorer = model.evaluate
