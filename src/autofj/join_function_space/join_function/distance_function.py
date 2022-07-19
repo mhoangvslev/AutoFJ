@@ -241,14 +241,26 @@ class DistanceFunction(object):
         distance: pd.Series
             distance between tuple pairs for each row
         """
+        
+        
+        # Apply maximum distances when comparing empty strings
+        def calc_distance(x, y, embedding = None, weight = None):
+            if x.value_l == "" or x.value_r == "":
+                return np.nan
+            elif embedding is not None:
+                return self.func(x, y, embedding)
+            elif weight is not None:
+                return self.func(x, y, weight)
+            return self.func(x, y)
+
         if weight is None:
             if "embed" not in self.method:
-                distance = LR.apply(lambda x: self.func(x.value_l, x.value_r), axis=1)
+                distance = LR.apply(lambda x: calc_distance(x.value_l, x.value_r), axis=1)
             else:
-                distance = LR.apply(lambda x: self.func(x.value_l, x.value_r, self.embedding), axis=1)
+                distance = LR.apply(lambda x: calc_distance(x.value_l, x.value_r, embed=self.embedding), axis=1)
         else:
-            distance = LR.apply(lambda x: self.func(x.value_l, x.value_r, weight), axis=1)
-        return distance
+            distance = LR.apply(lambda x: calc_distance(x.value_l, x.value_r, weight), axis=1)
+        return distance.fillna(distance.max())
 
 # data = pd.read_csv("../../data/left.csv")["title"]
 # X = np.concatenate([data.values for _ in range(20)])
