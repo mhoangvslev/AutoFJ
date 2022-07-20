@@ -9,3 +9,5 @@ src/autofj.egg-info/
 tmp*/
 
 *.twbr
+
+benchmark/results/
