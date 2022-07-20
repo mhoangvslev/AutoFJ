@@ -836,7 +836,7 @@ def cross_validate(
     model: AutoFJ, 
     X: Tuple[pd.DataFrame, pd.DataFrame], 
     y: pd.DataFrame, 
-    id_column: str, on: List[str], 
+    id_column: str, on: List[str]=None, 
     cv=5, shuffle=False, random_state=None, scorer=None, stable_left=False
 ):
     kfold = KFold(n_splits=cv, random_state=random_state, shuffle=shuffle)

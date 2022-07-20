@@ -245,7 +245,18 @@ class DistanceFunction(object):
         
         # Apply maximum distances when comparing empty strings
         def calc_distance(x, y, embedding = None, weight = None):
-            if x.value_l == "" or x.value_r == "":
+            """Apply distance function to x and y
+
+            Args:
+                x (List[str]): list of tokens of the left string
+                y (List[str]): list of tokens of the right string
+                embedding (_type_, optional): _description_. Defaults to None.
+                weight (_type_, optional): _description_. Defaults to None.
+
+            Returns:
+                float: distance [0, 1] between left and right 
+            """
+            if len(x) == 0 or len(y) == 0:
                 return np.nan
             elif embedding is not None:
                 return self.func(x, y, embedding)

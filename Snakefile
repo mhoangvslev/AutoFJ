@@ -23,7 +23,7 @@ rule autofj_benchmark_summary:
             dataset=sorted(os.listdir(config["dataDir"])),
             attempt=range(3),
             #bm_pipeline=["100", "90", "75", "50", "25"], # Add "cv" if needed
-            bm_pipeline=["cv"]
+            bm_pipeline=["75", "100", "cv"]
         )
     output: "{resultDir}/scalability_scores.csv"
     run:
