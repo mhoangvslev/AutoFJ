@@ -1,1 +1,1 @@
-from .autofj import AutoFJ, cross_validate, train_test_split, KFold, GridSearchCV
+from .autofj import AutoFJ, train_test_split, KFold, GridSearchCV

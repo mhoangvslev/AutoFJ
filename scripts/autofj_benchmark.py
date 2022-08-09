@@ -1,13 +1,16 @@
 from glob import glob
 import pathlib
 import shutil
+from time import time
 from autofj import AutoFJ
 import pandas as pd
+import numpy as np
 import os
 import click
 
-from autofj import cross_validate, train_test_split
-from sklearn.utils import shuffle
+from autofj import train_test_split
+from autofj.autofj import KFold
+from tqdm import tqdm
 
 @click.group()
 def cli():
@@ -27,18 +30,80 @@ def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline, attem
     for tmpDir in tmpDirs: 
         shutil.rmtree(tmpDir)
         
-    left = pd.read_csv(left)
-    right = pd.read_csv(right)
-    gt = pd.read_csv(gt)
+    data_l = pd.read_csv(left)
+    data_r = pd.read_csv(right)
+    data_gt = pd.read_csv(gt)
 
-    X, y = (left, right), gt
+    X, y = (data_l, data_r), data_gt
 
     model = AutoFJ(precision_target=0.9, verbose=False, join_function_space="autofj_lg")
     if bm_pipeline == "cv":
-        results = cross_validate(model, X, y, id_column="id", cv=5, scorer=model.evaluate, stable_left=True)
+        id_column="id"
+        cv=5 
+        scorer=model.evaluate 
+        stable_left=True
+        on = None
+
+        kfold = KFold(n_splits=5, random_state=None, shuffle=True)
+        results = {
+            "train_times": [],
+            "test_times": [],
+            "train_scores": [],
+            "test_scores": [],
+            "gt_size_train": [],
+            "l_size_train": [],
+            "r_size_train": [],
+            "gt_size_train": [],
+            "l_size_train": [],
+            "r_size_train": [],
+            "fold": np.arange(1, cv+1, step=1).tolist()
+        }
+
+        if scorer is None: scorer = model.evaluate
+            
+        for train, test in tqdm(kfold.split(X, y, stable_left=stable_left), total=cv, unit="fold"):
+            X_train, y_train = train
+            X_test, y_test = test
+
+            homeDir = os.path.dirname(os.path.realpath(left))
+            augPath = os.path.join(homeDir, "left_aug.csv")
+            if os.path.exists(augPath):
+                print("Augmenting left column...")
+                X_aug = pd.read_csv(augPath)
+                X_train_l, X_train_r = X_train
+                X_train_l = X_train_l.append(X_aug[X_train_l.columns])
+                X_train = (X_train_l, X_train_r)
+
+            trainBegin = time()
+            model.fit(X_train, y_train, id_column=id_column, on=on)
+            trainEnd = time()
+
+            results["train_times"].append(trainEnd-trainBegin)
+            results["train_scores"].append(scorer(y_train, model.train_results_))
+
+            testBegin = time()
+            y_pred = model.predict(X_test, id_column=id_column, on=on)
+            testEnd = time()
+
+            results["test_times"].append(testEnd-testBegin)
+            results["test_scores"].append(scorer(y_test, y_pred))
+
+            results["gt_size_test"], results["gt_size_train"] = len(y_test), len(y_train) 
+            results["l_size_test"], results["l_size_train"] = len(X_test[0]), len(X_train[0]) 
+            results["r_size_test"], results["r_size_train"] = len(X_test[1]), len(X_train[1])
     else:
         splitRate = float(bm_pipeline) * 0.01
         (X_train, y_train), (X_test, y_test) = train_test_split(X, y, train_size=splitRate, shuffle=True, stable_left=True)
+        
+        homeDir = os.path.dirname(os.path.realpath(left))
+        augPath = os.path.join(homeDir, "left_aug.csv")
+        if os.path.exists(augPath):
+            print("Augmenting left column...")
+            X_aug = pd.read_csv(augPath)
+            X_train_l, X_train_r = X_train
+            X_train_l = X_train_l.append(X_aug[X_train_l.columns])
+            X_train = (X_train_l, X_train_r)
+        
         X_test, y_test = X, y
         results = {}
 
