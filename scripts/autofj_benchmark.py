@@ -70,9 +70,10 @@ def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline, attem
             if os.path.exists(augPath):
                 print("Augmenting left column...")
                 X_aug = pd.read_csv(augPath)
-                X_train_l, X_train_r = X_train
-                X_train_l = X_train_l.append(X_aug[X_train_l.columns])
+                X_train_l_org, X_train_r = X_train
+                X_train_l = X_train_l_org.append(X_aug[X_train_l_org.columns])
                 X_train = (X_train_l, X_train_r)
+                print(f"X_train (original): {len(X_train_l_org)}; left_aug: {len(X_aug)}; X_train (augmented): {len(X_train_l)}")
 
             trainBegin = time()
             model.fit(X_train, y_train, id_column=id_column, on=on)
@@ -100,9 +101,10 @@ def autofj_benchmark_cv(left, right, gt, result_dir, dataset, bm_pipeline, attem
         if os.path.exists(augPath):
             print("Augmenting left column...")
             X_aug = pd.read_csv(augPath)
-            X_train_l, X_train_r = X_train
-            X_train_l = X_train_l.append(X_aug[X_train_l.columns])
+            X_train_l_org, X_train_r = X_train
+            X_train_l = X_train_l_org.append(X_aug[X_train_l_org.columns])
             X_train = (X_train_l, X_train_r)
+            print(f"X_train (original): {len(X_train_l_org)}; left_aug: {len(X_aug)}; X_train (augmented): {len(X_train_l)}")
         
         X_test, y_test = X, y
         results = {}
