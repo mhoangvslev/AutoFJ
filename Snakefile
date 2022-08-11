@@ -22,8 +22,7 @@ rule autofj_benchmark_summary:
             "{{resultDir}}/{dataset}/{attempt}/summary_{bm_pipeline}.csv",
             dataset=sorted(os.listdir(config["dataDir"])),
             attempt=range(3),
-            #bm_pipeline=["100", "90", "75", "50", "25"], # Add "cv" if needed
-            bm_pipeline=["75", "100", "cv"]
+            bm_pipeline=["complete-2"] # Choose from ["complete-1", "complete-2", "cv"]
         )
     output: "{resultDir}/scalability_scores.csv"
     run:
@@ -63,4 +62,4 @@ rule autofj_benchmark:
         unpack(get_dataset)
     output: "{resultDir}/{dataset}/{attempt}/summary_{bm_pipeline}.csv"
     shell:
-        "python scripts/autofj_benchmark.py autofj-benchmark-cv {input.left} {input.right} {input.gt} {wildcards.resultDir} {wildcards.dataset} {wildcards.bm_pipeline} {wildcards.attempt}"
+        "python scripts/autofj_benchmark.py autofj-benchmark {input.left} {input.right} {input.gt} {wildcards.resultDir} {wildcards.dataset} {wildcards.bm_pipeline} {wildcards.attempt}"
