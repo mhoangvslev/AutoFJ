@@ -9,7 +9,7 @@ from nltk.stem.porter import PorterStemmer
 import time
 from functools import partial
 import numpy as np
-from autofj_blocker import AutoFJBlocker
+from .autofj_blocker import AutoFJBlocker
 
 class KnowMoreBlocker(AutoFJBlocker):
     """KnowMoreBlocker default Blocker

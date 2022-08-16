@@ -33,7 +33,8 @@ setuptools.setup(
         'torch',
         'tqdm',
         'scikit-learn',
-        'Click'
+        'Click',
+        'qwikidata'
     ],
     include_package_data=True
 )

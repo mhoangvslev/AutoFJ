@@ -11,23 +11,23 @@ rule all:
         #     4. 25% train rate
         #     5. 5-fold cross-validation
         expand(
-            "{resultDir}/scalability_scores.csv", 
+            "{resultDir}/benchmark_{bm_pipeline}.csv", 
             resultDir=config["resultDir"],
-            phase=["train", "test"]
+            phase=["train", "test"],
+            bm_pipeline=["complete-2"] # Choose from ["complete-1", "complete-2", "cv", "blocker"]
         )
 
 rule autofj_benchmark_summary:
     input: 
         expand(
-            "{{resultDir}}/{dataset}/{attempt}/summary_{bm_pipeline}.csv",
+            "{{resultDir}}/{dataset}/{attempt}/summary_{{bm_pipeline}}.csv",
             dataset=sorted(os.listdir(config["dataDir"])),
-            attempt=range(3),
-            bm_pipeline=["complete-2"] # Choose from ["complete-1", "complete-2", "cv"]
+            attempt=range(3)
         )
-    output: "{resultDir}/scalability_scores.csv"
+    output: "{resultDir}/benchmark_{bm_pipeline}.csv"
     run:
         for summaryFile in input:
-            pattern = r"/(\w+)/(\d+)/summary_(\w+).csv"
+            pattern = r"/(\w+)/(\d+)/summary_(.*).csv"
             match = re.search(pattern, summaryFile)
             dataset = match.group(1)
             attempt = match.group(2)
@@ -39,11 +39,7 @@ rule autofj_benchmark_summary:
             df["dataset"] = dataset
             df["attempt"] = attempt
 
-            if bm_pipeline == "cv":
-                fileName = f"{wildcards.resultDir}/cross_validation_scores.csv"
-            else:
-                df["trainSize"] = bm_pipeline
-                fileName = f"{wildcards.resultDir}/scalability_scores.csv"
+            fileName = f"{wildcards.resultDir}/benchmark_{wildcards.bm_pipeline}.csv"
             isNew = not os.path.exists(fileName)
             df.to_csv(fileName, header=isNew, index=False, mode="w" if isNew else "a")                
 
