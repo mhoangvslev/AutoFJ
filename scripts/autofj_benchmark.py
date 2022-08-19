@@ -27,8 +27,8 @@ def cli():
 @click.argument("dataset", type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.option("--id", type=click.STRING, default="id")
 @click.option("--on", type=click.STRING, default=None)
-
-def predict(modelname, dataset, id, on):
+@click.option("--outDir", type=click.Path(exists=True, file_okay=False, dir_okay=True), default=None)
+def predict(modelname, dataset, id, on, outDir):
     model: AutoFJ = AutoFJ.load_model(modelname)
     data_l = pd.read_csv(os.path.join(dataset, "left.csv"))
     data_r = pd.read_csv(os.path.join(dataset, "right.csv"))
@@ -60,10 +60,13 @@ def predict(modelname, dataset, id, on):
     print(f"True positive: {tp}")
     print(f"False positive: {fp}")
     print(f"False negative: {fn}")
-    y_pred.to_csv(os.path.join(dataset, "pred.csv"), index=False)
-    tp.to_csv(os.path.join(dataset, "pred_tp.csv"), index=False)
-    fp.to_csv(os.path.join(dataset, "pred_fp.csv"), index=False)
-    fn.to_csv(os.path.join(dataset, "pred_fn.csv"), index=False)
+
+    if outDir is None: outDir = dataset
+
+    y_pred.to_csv(os.path.join(outDir, "pred.csv"), index=False)
+    tp.to_csv(os.path.join(outDir, "pred_tp.csv"), index=False)
+    fp.to_csv(os.path.join(outDir, "pred_fp.csv"), index=False)
+    fn.to_csv(os.path.join(outDir, "pred_fn.csv"), index=False)
 
 
 @cli.command()

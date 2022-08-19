@@ -17,6 +17,18 @@ rule all:
             bm_pipeline=["complete-2"] # Choose from ["complete-1", "complete-2", "cv", "blocker"]
         )
 
+rule autofj_benchmark_prediction:
+    input: 
+        expand(
+            "{{resultDir}}/{dataset}/{attempt}/{dataset}_{{bm_pipeline}}_model.pkl",
+            dataset=sorted(os.listdir(config["dataDir"])),
+            attempt=range(3)
+        )
+    output:
+        "{resultDir}/{dataset}/{attempt}/pred.csv"
+    run:
+        "python scripts/autofj_benchmark.py predict {input} {input.gt} {wildcards.resultDir} {wildcards.dataset} {wildcards.bm_pipeline} {wildcards.attempt}"
+
 rule autofj_benchmark_summary:
     input: 
         expand(
@@ -41,7 +53,15 @@ rule autofj_benchmark_summary:
 
             fileName = f"{wildcards.resultDir}/benchmark_{wildcards.bm_pipeline}.csv"
             isNew = not os.path.exists(fileName)
-            df.to_csv(fileName, header=isNew, index=False, mode="w" if isNew else "a")                
+            df.to_csv(fileName, header=isNew, index=False, mode="w" if isNew else "a") 
+
+            # Predict
+            homeDir = os.path.join(wildcards.resultDir, dataset, attempt)
+            modelName = f"{dataset}_{bm_pipeline}_model.pkl"
+            modelPath = os.path.join(homeDir, modelName)
+
+            dataPath = os.path.join(config["dataDir"], dataset)
+            subprocess.run(["python", "scripts/autofj_benchmark.py", "predict", modelPath, dataPath, f"--outDir={homeDir}"])          
 
 def get_dataset(wildcards):
     return {
