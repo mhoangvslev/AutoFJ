@@ -597,11 +597,16 @@ class AutoFJ(ClassifierMixin, BaseEstimator):
         gt_joins = y_true.astype(str)[["id_l", "id_r"]].values
         pred_joins = y_pred.astype(str)[["id_l", "id_r"]].values
 
-        pred_set = {tuple(sorted(j)) for j in pred_joins}
-        gt_set = {tuple(sorted(j)) for j in gt_joins}
+        #pred_set = {tuple(sorted(j)) for j in pred_joins}
+        #gt_set = {tuple(sorted(j)) for j in gt_joins}
+
+        pred_set = {(l, r) for l, r in pred_joins}
+        gt_set = {(l, r) for l, r in gt_joins}
 
         # TP: When the prediction is in ground truth
         tp = pred_set.intersection(gt_set)
+        fp = pred_set.difference(tp)
+        fn = gt_set.difference(tp)
 
         try: precision = len(tp) / len(pred_set)
         except: precision = np.nan
@@ -615,7 +620,11 @@ class AutoFJ(ClassifierMixin, BaseEstimator):
             fscore = (f_coef + 1) * precision * recall / (precision + recall)
         except:
             fscore = np.nan
-        return {'precision': precision, 'recall': recall, f'f{f_coef}-score': fscore}
+        test_results = {'precision': precision, 'recall': recall, f'f{f_coef}-score': fscore}
+
+        if kwargs.get("verbose"):
+            return test_results, tp, fp, fn
+        return test_results
 
     def featurize(self, X, id_column):
         trainer = AutoFJTrainer(

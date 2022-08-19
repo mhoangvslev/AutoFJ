@@ -1,3 +1,5 @@
+from copyreg import pickle
+from email.policy import default
 from glob import glob
 import pathlib
 import shutil
@@ -19,6 +21,50 @@ from autofj.blocker.wikidata_blocker import WikidataBlocker
 @click.group()
 def cli():
     pass
+
+@cli.command()
+@click.argument("modelname", type=click.Path(exists=True, file_okay=True, dir_okay=False))
+@click.argument("dataset", type=click.Path(exists=True, file_okay=False, dir_okay=True))
+@click.option("--id", type=click.STRING, default="id")
+@click.option("--on", type=click.STRING, default=None)
+
+def predict(modelname, dataset, id, on):
+    model: AutoFJ = AutoFJ.load_model(modelname)
+    data_l = pd.read_csv(os.path.join(dataset, "left.csv"))
+    data_r = pd.read_csv(os.path.join(dataset, "right.csv"))
+    data_gt = pd.read_csv(os.path.join(dataset, "gt.csv"))
+
+    X_test, y_test = (data_l, data_r), data_gt
+    y_pred = model.predict(X_test, id_column=id, on=on)
+
+    test_results, tp, fp, fn = model.evaluate(y_test, y_pred, verbose=True)
+
+    tp = (
+        pd.DataFrame(tp, columns=['id_l', 'id_r'])
+            .merge(data_l.rename(columns={'id': 'id_l'}), on="id_l", suffixes=("_l", "_r"))
+            .merge(data_r.rename(columns={'id': 'id_r'}), on="id_r", suffixes=("_l", "_r"))
+    )
+    fp = (
+        pd.DataFrame(fp, columns=['id_l', 'id_r'])
+            .merge(data_l.rename(columns={'id': 'id_l'}), on="id_l", suffixes=("_l", "_r"))
+            .merge(data_r.rename(columns={'id': 'id_r'}), on="id_r", suffixes=("_l", "_r"))
+    )
+
+    fn = (
+        pd.DataFrame(fn, columns=['id_l', 'id_r'])
+            .merge(data_l.rename(columns={'id': 'id_l'}), on="id_l", suffixes=("_l", "_r"))
+            .merge(data_r.rename(columns={'id': 'id_r'}), on="id_r", suffixes=("_l", "_r"))
+    )
+
+    print(f"Test results: {test_results}")
+    print(f"True positive: {tp}")
+    print(f"False positive: {fp}")
+    print(f"False negative: {fn}")
+    y_pred.to_csv(os.path.join(dataset, "pred.csv"), index=False)
+    tp.to_csv(os.path.join(dataset, "pred_tp.csv"), index=False)
+    fp.to_csv(os.path.join(dataset, "pred_fp.csv"), index=False)
+    fn.to_csv(os.path.join(dataset, "pred_fn.csv"), index=False)
+
 
 @cli.command()
 @click.argument("left", type=click.Path(exists=True, file_okay=True, dir_okay=False))
