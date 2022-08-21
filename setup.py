@@ -34,7 +34,8 @@ setuptools.setup(
         'tqdm',
         'scikit-learn',
         'Click',
-        'qwikidata'
+        'qwikidata',
+        'spacy-universal-sentence-encoder[multi]'
     ],
     include_package_data=True
 )

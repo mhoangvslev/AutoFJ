@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import spacy
 from transformers import BartTokenizer, BartModel
-from scipy.spatial.distance import euclidean
+from scipy.spatial.distance import euclidean, cosine
 import torch
 from dateutil.parser import parse as date_parse
 
@@ -17,6 +17,8 @@ from dateutil.parser import parse as date_parse
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
 # model = BartModel.from_pretrained("facebook/bart-base").to(device)
+
+import spacy_universal_sentence_encoder
 
 """Distance Functions"""
 def jaccardDistance(x, y, w=None):
@@ -145,10 +147,7 @@ def knowMoreDistance(x, y):
         return cosineDistance(x, y)
 
 def embedDistance(x, y, embedding):
-    x = embedding(x)
-    y = embedding(y)
-    d = 1 - x.similarity(y)
-    return d
+    return cosine(embedding(x), embedding(y))
 
 # def BARTEmbedding(x):
 #     inputs = tokenizer(x, return_tensors="pt").to(device)
@@ -213,14 +212,15 @@ class DistanceFunction(object):
             self.func = containDiceDistance
         elif method == "embedDistance":
             self.func = embedDistance
-            self.embedding = spacy.load("en_core_web_lg")
+            self.embedding = lambda x: spacy_universal_sentence_encoder.load_model('xx_use_lg')(x).vector
+
         # BERT/BART
-        elif method == "embed_BART-Large":
-            self.func = euclideanEmbedDistance
-            self.embedding = BARTEmbedding
-        else:
-            raise Exception("{} is an invalid distance function"
-                             .format(method))
+        # elif method == "embed_BART-Large":
+        #     self.func = euclideanEmbedDistance
+        #     self.embedding = BARTEmbedding
+        # else:
+        #     raise Exception("{} is an invalid distance function"
+        #                      .format(method))
 
     def compute_distance(self, LR, weight=None):
         """"Compute distance score between tuple pairs
@@ -268,7 +268,7 @@ class DistanceFunction(object):
             if "embed" not in self.method:
                 distance = LR.apply(lambda x: calc_distance(x.value_l, x.value_r), axis=1)
             else:
-                distance = LR.apply(lambda x: calc_distance(x.value_l, x.value_r, embed=self.embedding), axis=1)
+                distance = LR.apply(lambda x: calc_distance(x.value_l, x.value_r, embedding=self.embedding), axis=1)
         else:
             distance = LR.apply(lambda x: calc_distance(x.value_l, x.value_r, weight), axis=1)
         return distance.fillna(distance.max())

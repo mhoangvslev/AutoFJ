@@ -13,6 +13,7 @@ autofj_lg:
   char_distance_functions: 
     - "editDistance"
     - "jaroDistance"
+    #- "embedDistance"
   set_distance_functions: 
     - "containJaccardDistance"
     - "containCosineDistance"
@@ -37,6 +38,7 @@ autofj_md:
   char_distance_functions: 
     - "editDistance"
     - "jaroDistance"
+    #- "embedDistance"
   set_distance_functions: 
     - "containJaccardDistance"
     - "containCosineDistance"
@@ -58,6 +60,7 @@ autofj_sm:
     - "idfWeight"
   char_distance_functions: 
     - "jaroDistance"
+    #- "embedDistance"
   set_distance_functions: 
     - "containCosineDistance"
     - "jaccardDistance"

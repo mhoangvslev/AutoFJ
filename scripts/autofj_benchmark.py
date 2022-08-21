@@ -27,8 +27,8 @@ def cli():
 @click.argument("dataset", type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.option("--id", type=click.STRING, default="id")
 @click.option("--on", type=click.STRING, default=None)
-@click.option("--outDir", type=click.Path(exists=True, file_okay=False, dir_okay=True), default=None)
-def predict(modelname, dataset, id, on, outDir):
+@click.option("--outdir", type=click.Path(exists=True, file_okay=False, dir_okay=True), default=None)
+def predict(modelname, dataset, id, on, outdir):
     model: AutoFJ = AutoFJ.load_model(modelname)
     data_l = pd.read_csv(os.path.join(dataset, "left.csv"))
     data_r = pd.read_csv(os.path.join(dataset, "right.csv"))
@@ -56,17 +56,18 @@ def predict(modelname, dataset, id, on, outDir):
             .merge(data_r.rename(columns={'id': 'id_r'}), on="id_r", suffixes=("_l", "_r"))
     )
 
-    print(f"Test results: {test_results}")
-    print(f"True positive: {tp}")
-    print(f"False positive: {fp}")
-    print(f"False negative: {fn}")
+    if outdir is None: outdir = os.path.dirname(modelname)
 
-    if outDir is None: outDir = dataset
+    y_pred.to_csv(os.path.join(outdir, "pred.csv"), index=False)
+    tp.to_csv(os.path.join(outdir, "pred_tp.csv"), index=False)
+    fp.to_csv(os.path.join(outdir, "pred_fp.csv"), index=False)
+    fn.to_csv(os.path.join(outdir, "pred_fn.csv"), index=False)
 
-    y_pred.to_csv(os.path.join(outDir, "pred.csv"), index=False)
-    tp.to_csv(os.path.join(outDir, "pred_tp.csv"), index=False)
-    fp.to_csv(os.path.join(outDir, "pred_fp.csv"), index=False)
-    fn.to_csv(os.path.join(outDir, "pred_fn.csv"), index=False)
+    learned_col_weights = pd.DataFrame(model.selected_column_weights_, columns=["column", "weight"])
+    print(model.selected_column_weights_)
+    learned_col_weights.to_csv(os.path.join(outdir, "learned_col_weight.csv"), index=False)
+    learned_join_conf = pd.DataFrame(model.selected_join_config_, columns=["config", "threshhold"])
+    learned_join_conf.to_csv(os.path.join(outdir, "learned_join_conf.csv"), index=False)
 
 
 @cli.command()
