@@ -236,7 +236,8 @@ class AutoFJMulticolGreedyAlgorithm(object):
         # add weight for new column
         column_weights = []
         for nw in self.candidate_column_weights[1:-1]:
-            new_w = np.array([w * nw for w in old_weights] + [1 - nw])
+            #new_w = np.array([w * nw for w in old_weights] + [1 - nw])
+            new_w = np.array([ (1 - nw) * w for w in old_weights ] + nw)
             column_weights.append(new_w)
 
         return column_weights

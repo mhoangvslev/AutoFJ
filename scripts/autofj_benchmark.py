@@ -30,14 +30,10 @@ def cli():
 @click.option("--outdir", type=click.Path(exists=True, file_okay=False, dir_okay=True), default=None)
 def predict(modelname, dataset, id, on, outdir):
     model: AutoFJ = AutoFJ.load_model(modelname)
-    model.selected_column_weights_ = {
-        "title": 0.10,
-        "author": 0.90
-    }
 
-    data_l = pd.read_csv(os.path.join(dataset, "left.csv")).fillna("")
-    data_r = pd.read_csv(os.path.join(dataset, "right.csv")).fillna("")
-    data_gt = pd.read_csv(os.path.join(dataset, "gt.csv")).fillna("")
+    data_l = pd.read_csv(os.path.join(dataset, "left.csv"))
+    data_r = pd.read_csv(os.path.join(dataset, "right.csv"))
+    data_gt = pd.read_csv(os.path.join(dataset, "gt.csv"))
 
     mergeCols = list(model.selected_column_weights_.keys())
     dropCols = [ c for c in data_l.columns if "id" not in c and c not in mergeCols ]
@@ -49,8 +45,6 @@ def predict(modelname, dataset, id, on, outdir):
 
     X_test, y_test = (data_l, data_r), data_gt    
     y_pred = model.predict(X_test, id_column=id, on=on)
-
-    print(y_pred)
 
     test_results, tp, fp, fn = model.evaluate(y_test, y_pred, verbose=True)
 
