@@ -61,7 +61,7 @@ rule autofj_benchmark_summary:
             modelPath = os.path.join(homeDir, modelName)
 
             dataPath = os.path.join(config["dataDir"], dataset)
-            subprocess.run(["python", "scripts/autofj_benchmark.py", "predict", modelPath, dataPath, f"--outDir={homeDir}"])          
+            subprocess.run(["python", "scripts/autofj_benchmark.py", "predict", modelPath, dataPath, f"--outdir={homeDir}"])          
 
 def get_dataset(wildcards):
     return {

@@ -35,6 +35,8 @@ def predict(modelname, dataset, id, on, outdir):
     data_gt = pd.read_csv(os.path.join(dataset, "gt.csv"))
 
     X_test, y_test = (data_l, data_r), data_gt
+    
+    if on is not None: on = on.split(",")
     y_pred = model.predict(X_test, id_column=id, on=on)
 
     test_results, tp, fp, fn = model.evaluate(y_test, y_pred, verbose=True)
@@ -63,11 +65,12 @@ def predict(modelname, dataset, id, on, outdir):
     fp.to_csv(os.path.join(outdir, "pred_fp.csv"), index=False)
     fn.to_csv(os.path.join(outdir, "pred_fn.csv"), index=False)
 
-    learned_col_weights = pd.DataFrame(model.selected_column_weights_, columns=["column", "weight"])
-    print(model.selected_column_weights_)
+    learned_col_weights = pd.DataFrame({ k: [v] for k, v in model.selected_column_weights_.items()})
     learned_col_weights.to_csv(os.path.join(outdir, "learned_col_weight.csv"), index=False)
     learned_join_conf = pd.DataFrame(model.selected_join_config_, columns=["config", "threshhold"])
     learned_join_conf.to_csv(os.path.join(outdir, "learned_join_conf.csv"), index=False)
+
+    print(test_results)
 
 
 @cli.command()
