@@ -253,7 +253,7 @@ class AutoFJTrainer(AutoFJAbstract):
             verbose=self.verbose
         )
 
-        self.selected_column_weights, self.selected_join_configs, LR_joins = \
+        self.selected_column_weights, self.selected_join_configs, LR_joins, precision_est = \
             optimizer.run()
 
         if LR_joins is None:
@@ -262,7 +262,7 @@ class AutoFJTrainer(AutoFJAbstract):
                   "distance thresholds and column weights.")
             LR_joins = pd.DataFrame(columns=[c+"_l" for c in left_table.columns]+
                                             [c+"_r" for c in right_table.columns])
-            return LR_joins
+            return LR_joins, precision_est
 
         # merge with original left and right tables
         left_idx = [l for l, r in LR_joins]
@@ -270,7 +270,7 @@ class AutoFJTrainer(AutoFJAbstract):
         L = left_table.iloc[left_idx].add_suffix("_l").reset_index(drop=True)
         R = right_table.iloc[right_idx].add_suffix("_r").reset_index(drop=True)
         result = pd.concat([L, R], axis=1).sort_values(by=id_column + "_r")
-        return result
+        return result, precision_est
 
 class AutoFJPredictor(AutoFJAbstract):
     def __init__(self, uoc, column_weights, blocker=None, n_jobs=-1, verbose=False, name=None):
@@ -567,7 +567,7 @@ class AutoFJ(ClassifierMixin, BaseEstimator):
         )
         self.selected_column_weights_ = None
         self.selected_join_config_ = None
-        self.train_results_ = trainer.join(left, right, kwargs.get('id_column'), kwargs.get('on'))
+        self.train_results_, self.precision_est_ = trainer.join(left, right, kwargs.get('id_column'), kwargs.get('on'))
         self.selected_join_config_ = trainer.selected_join_configs
         self.selected_column_weights_ = trainer.selected_column_weights
         return self

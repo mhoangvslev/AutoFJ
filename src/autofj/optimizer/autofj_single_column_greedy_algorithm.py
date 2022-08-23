@@ -270,7 +270,7 @@ class AutoFJGreedyAlgorithm(object):
 
             n_iter += 1
 
-        return self.LR_joins, self.config_selected
+        return self.LR_joins, self.config_selected, best_avg_prec
 
     def get_full_LR_sel(self):
         """Get full LR matches instead of selecting one l for each r

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from multiprocessing import Pool
+from sklearn.metrics import precision_score
 
 from tqdm import tqdm
 from .autofj_single_column_greedy_algorithm import AutoFJGreedyAlgorithm
@@ -74,10 +75,11 @@ class AutoFJMulticolGreedyAlgorithm(object):
         best_weights = None
         best_join_config = None
         best_column_weights = None
+        best_precision_est = None
 
         for i in tqdm(range(len(self.column_names)), unit="column"):
             # get the best result after adding one column
-            columns, weights, join_config, LR_joins, reward \
+            columns, weights, join_config, LR_joins, reward, precision_est \
                 = self.forward_selection(best_columns, best_weights)
 
             # if the reward stops increasing by adding columns, terminates
@@ -85,8 +87,8 @@ class AutoFJMulticolGreedyAlgorithm(object):
                 break
 
             # save best result
-            best_columns, best_weights, best_join_config, best_LR_joins, best_reward \
-                = columns, weights, join_config, LR_joins, reward
+            best_columns, best_weights, best_join_config, best_LR_joins, best_reward, best_precision_est \
+                = columns, weights, join_config, LR_joins, reward, precision_est
 
             if best_join_config is not None:
                 best_column_weights = self.get_column_weights(best_columns,
@@ -97,7 +99,7 @@ class AutoFJMulticolGreedyAlgorithm(object):
                               ",".join([str(w) for w in best_weights]),
                               best_reward))
 
-        return best_column_weights, best_join_config, best_LR_joins
+        return best_column_weights, best_join_config, best_LR_joins, best_precision_est
 
     def forward_selection(self, base_columns, base_weights):
         """Do one step forward selection. Adding one column from the remaining
@@ -144,16 +146,18 @@ class AutoFJMulticolGreedyAlgorithm(object):
         best_LR_joins = None
         best_join_config = None
         best_columns = None
+        best_precision_est = None
 
-        for i, (LR_joins, reward, config_selected) in enumerate(results):
+        for i, (LR_joins, reward, config_selected, precision_est) in enumerate(results):
             if reward > best_reward:
                 best_reward = reward
                 best_columns = list(column_weights_cands[i].keys())
                 best_weights = list(column_weights_cands[i].values())
                 best_LR_joins = LR_joins
                 best_join_config = config_selected
+                best_precision_est = precision_est
         return best_columns, best_weights, best_join_config, best_LR_joins, \
-               best_reward
+               best_reward, best_precision_est
 
     def get_column_weights_cands(self, base_columns, base_weights):
         """Get candidate column weights by adding one column into old columns
@@ -200,9 +204,9 @@ class AutoFJMulticolGreedyAlgorithm(object):
                                           self.candidate_thresholds,
                                           n_jobs=self.n_jobs,
                                           verbose=self.verbose)
-        LR_joins, config_selected = optimizer.run()
+        LR_joins, config_selected, precision_est = optimizer.run()
         reward = optimizer.get_reward()
-        return LR_joins, reward, config_selected
+        return LR_joins, reward, config_selected, precision_est
 
     def get_new_weights(self, old_weights):
         """Get column weight search space. Keeping ratios of old weights fixed,

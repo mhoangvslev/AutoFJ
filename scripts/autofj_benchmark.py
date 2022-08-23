@@ -30,14 +30,27 @@ def cli():
 @click.option("--outdir", type=click.Path(exists=True, file_okay=False, dir_okay=True), default=None)
 def predict(modelname, dataset, id, on, outdir):
     model: AutoFJ = AutoFJ.load_model(modelname)
-    data_l = pd.read_csv(os.path.join(dataset, "left.csv"))
-    data_r = pd.read_csv(os.path.join(dataset, "right.csv"))
-    data_gt = pd.read_csv(os.path.join(dataset, "gt.csv"))
+    model.selected_column_weights_ = {
+        "title": 0.10,
+        "author": 0.90
+    }
 
-    X_test, y_test = (data_l, data_r), data_gt
-    
+    data_l = pd.read_csv(os.path.join(dataset, "left.csv")).fillna("")
+    data_r = pd.read_csv(os.path.join(dataset, "right.csv")).fillna("")
+    data_gt = pd.read_csv(os.path.join(dataset, "gt.csv")).fillna("")
+
+    mergeCols = list(model.selected_column_weights_.keys())
+    dropCols = [ c for c in data_l.columns if "id" not in c and c not in mergeCols ]
+
     if on is not None: on = on.split(",")
+
+    #data_lt = data_l.assign(data=data_l[mergeCols].astype(str).agg(' '.join, axis=1)).drop(mergeCols, axis=1).drop(dropCols, axis=1)
+    #data_rt = data_r.assign(data=data_r[mergeCols].astype(str).agg(' '.join, axis=1)).drop(mergeCols, axis=1).drop(dropCols, axis=1)
+
+    X_test, y_test = (data_l, data_r), data_gt    
     y_pred = model.predict(X_test, id_column=id, on=on)
+
+    print(y_pred)
 
     test_results, tp, fp, fn = model.evaluate(y_test, y_pred, verbose=True)
 
@@ -100,6 +113,7 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
         "test_times": [],
         "train_scores": [],
         "test_scores": [],
+        "train_precision_est": [],
         "gt_size_train": [],
         "l_size_train": [],
         "r_size_train": [],
@@ -152,6 +166,7 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
             results["l_size_train"].append(len(X_train[0]))
             results["r_size_test"].append(len(X_test[1]))
             results["r_size_train"].append(len(X_train[1]))
+            results["train_precision_est"].append(model.precision_est_)
     
     elif bm_pipeline == "complete-1":
         
@@ -191,6 +206,7 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
             results["l_size_train"].append(len(X_train[0]))
             results["r_size_test"].append(len(X_test[1]))
             results["r_size_train"].append(len(X_train[1]))
+            results["train_precision_est"].append(model.precision_est_)
     
     elif bm_pipeline == "complete-2":
 
@@ -230,6 +246,7 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
             results["l_size_train"].append(len(X_train[0]))
             results["r_size_test"].append(len(X_test[1]))
             results["r_size_train"].append(len(X_train[1]))
+            results["train_precision_est"].append(model.precision_est_)
         
     elif bm_pipeline == "blocker":
         blockers = {
@@ -276,6 +293,7 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
             results["l_size_train"].append(len(X_train[0]))
             results["r_size_test"].append(len(X_test[1]))
             results["r_size_train"].append(len(X_train[1]))
+            results["train_precision_est"].append(model.precision_est_)
 
     else: 
         raise RuntimeError(f"Unknown pipeline '{bm_pipeline}'")
