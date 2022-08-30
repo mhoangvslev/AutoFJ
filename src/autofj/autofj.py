@@ -353,6 +353,7 @@ class AutoFJPredictor(AutoFJAbstract):
                     # compute precision as 1/ #L-L joins
                     num_LL_joins = self.get_num_LL_joins(LL, lid, thresh)
                     prec[rid] = (lid, 1 / num_LL_joins)
+                    #prec[rid] = (lid, num_LL_joins/len(LL))
 
                 precision[(jf, thresh)] = prec
 

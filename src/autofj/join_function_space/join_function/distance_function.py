@@ -147,7 +147,14 @@ def knowMoreDistance(x, y):
         return cosineDistance(x, y)
 
 def embedDistance(x, y, embedding):
-    return cosine(embedding(x), embedding(y))
+    vecX = embedding(x) 
+    vecY = embedding(y)
+
+    # Special cases
+    # if isinstance(embedding, spacy.language.xx.MultiLanguage):
+    #     vecX = vecX.vector
+    #     vecY = vecY.vector
+    return vecX.similarity(vecY)
 
 # def BARTEmbedding(x):
 #     inputs = tokenizer(x, return_tensors="pt").to(device)
@@ -212,7 +219,8 @@ class DistanceFunction(object):
             self.func = containDiceDistance
         elif method == "embedDistance":
             self.func = embedDistance
-            self.embedding = lambda x: spacy_universal_sentence_encoder.load_model('xx_use_lg')(x).vector
+            self.embedding = spacy_universal_sentence_encoder.load_model('xx_use_lg')
+            #self.embedding = spacy.load("en_core_web_lg")
 
         # BERT/BART
         # elif method == "embed_BART-Large":
