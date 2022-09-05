@@ -22,7 +22,7 @@ setuptools.setup(
     python_requires=">=3.7",
     install_requires=[
         'numpy',
-        'pandas',
+        'pandas==1.3.4',
         'nltk',
         'ngram',
         'editdistance',
@@ -35,7 +35,9 @@ setuptools.setup(
         'scikit-learn',
         'Click',
         'qwikidata',
-        'spacy-universal-sentence-encoder[multi]'
+        'spacy-universal-sentence-encoder[multi]',
+        'langdetect',
+        'gdown'
     ],
     include_package_data=True
 )
