@@ -204,7 +204,7 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
     
     elif bm_pipeline == "complete-2":
 
-        augQtys = [0, 50, 100, 1000, 2000, 3000, 4000, 5000 ]
+        augQtys = [ 0.30, 0.50, 0.70, 0.90, 1 ]
         results["l_aug_size"] = augQtys
 
         for augQty in augQtys:
@@ -214,7 +214,8 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
             augPath = os.path.join(homeDir, "left_aug.csv")
             if os.path.exists(augPath):
                 print("Augmenting left column...")
-                X_aug = pd.read_csv(augPath).head(augQty)
+                X_aug = pd.read_csv(augPath)
+                X_aug = X_aug.head(augQty * len(X_aug))
                 X_train_l_org, X_train_r = X_train
                 X_train_l = X_train_l_org.append(X_aug[X_train_l_org.columns])
                 X_train = (X_train_l, X_train_r)
@@ -261,7 +262,7 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
             augPath = os.path.join(homeDir, "left_aug.csv")
             if os.path.exists(augPath):
                 print("Augmenting left column...")
-                X_aug = pd.read_csv(augPath).head(augQty)
+                X_aug = pd.read_csv(augPath)
                 X_train_l_org, X_train_r = X_train
                 X_train_l = X_train_l_org.append(X_aug[X_train_l_org.columns])
                 X_train = (X_train_l, X_train_r)
