@@ -21,7 +21,7 @@ from sklearn.metrics._scorer import _check_multimetric_scoring
 import sklearn.model_selection as sklearn_ms
 from sklearn.utils import shuffle as shuffle_data
 from sklearn.base import ClassifierMixin, BaseEstimator
-from sklearn.model_selection._validation import _warn_about_fit_failures, _fit_and_score, _insert_error_scores
+from sklearn.model_selection._validation import _warn_or_raise_about_fit_failures, _fit_and_score, _insert_error_scores
 
 from .join_function_space.autofj_join_function_space import AutoFJJoinFunctionSpace, AutoFJJoinFunctionSpacePred
 from .blocker.autofj_blocker import AutoFJBlocker
@@ -60,13 +60,11 @@ class AutoFJAbstract(object):
     ):
         pass
 
-    def preprocessing(self,
-        left_table: pd.DataFrame, 
-        right_table: pd.DataFrame
-    ):
+    def preprocessing(self, left_table: pd.DataFrame, right_table: pd.DataFrame, **kwargs):
         # do blocking
         if self.verbose:
             print_log("Start blocking")
+
         LL_blocked = self.blocker.block(left_table, left_table, "autofj_id")
         LR_blocked = self.blocker.block(left_table, right_table, "autofj_id")
 
@@ -75,9 +73,16 @@ class AutoFJAbstract(object):
             LL_blocked["autofj_id_l"] != LL_blocked["autofj_id_r"]]
 
         # learn and apply negative rules
-        nr = NegativeRule(left_table, right_table, "autofj_id")
-        nr.learn(LL_blocked)
-        LR_blocked = nr.apply(LR_blocked)
+        if kwargs.get("pretrained_nr") is None:
+            self.nr = NegativeRule(left_table, right_table, "autofj_id")
+            print("Created negative rules from scratch.")
+        else:
+            self.nr = NegativeRule.load_pretrained_rules(kwargs.get("pretrained_nr"), left_table, right_table, "autofj_id")
+            print(f"Loaded {len(self.nr.negative_rules)} rules from pretrained model.")
+        
+        # Block left_aug and itself then learn negative rules. Onced learned, proceed with original left blocked
+        self.nr.learn(LL_blocked)
+        LR_blocked = self.nr.apply(LR_blocked)
 
         return LL_blocked, LR_blocked
 class AutoFJTrainer(AutoFJAbstract):
@@ -143,8 +148,10 @@ class AutoFJTrainer(AutoFJAbstract):
                  verbose=False,
                  name=None
     ):
+
         self.precision_target = precision_target
         self.join_function_space = join_function_space
+        self.nr: NegativeRule = None
 
         if type(distance_threshold_space) == int:
             self.distance_threshold_space = list(
@@ -167,7 +174,13 @@ class AutoFJTrainer(AutoFJAbstract):
         self.n_jobs = n_jobs if n_jobs > 0 else os.cpu_count()
         self.verbose = verbose
 
-    def compute_distance(self, left_table: pd.DataFrame, right_table: pd.DataFrame, id_column: str, on: Optional[Union[str, List[str]]] = None):
+    def compute_distance(self, 
+        left_table: pd.DataFrame, 
+        right_table: pd.DataFrame, 
+        id_column: str, 
+        on: Optional[Union[str, List[str]]] = None,
+        **kwargs
+    ):
         left = left_table.copy(deep=True)
         right = right_table.copy(deep=True)
 
@@ -182,11 +195,7 @@ class AutoFJTrainer(AutoFJAbstract):
         # get names of columns to be joined
         if on is None:
             on = sorted(list(set(left.columns).intersection(right.columns)))
-        elif isinstance(on, str):
-            on = [on + "autofj_id"]
-        elif isinstance(on, list):
-            on = on + ["autofj_id"]
-
+    
         left = left[on]
         right = right[on]
 
@@ -208,6 +217,7 @@ class AutoFJTrainer(AutoFJAbstract):
         right_table: pd.DataFrame, 
         id_column: str, 
         on: Optional[Union[str, List[str]]]=None,
+        **kwargs
     ):
         """Join left table and right table.
 
@@ -236,6 +246,12 @@ class AutoFJTrainer(AutoFJAbstract):
                 suffixed with "_l" and the columns of right table are suffixed
                 with "_r"
         """
+
+        # Augment left column
+        l_aug = kwargs.get("left_aug") 
+        if l_aug is not None:
+            print(f"Augmenting left for learning Negative Rule with {len(l_aug)} entries")
+            left_table = pd.concat([left_table, l_aug]).drop_duplicates().reset_index(drop=True)
 
         _, _, LL_distance, LR_distance = self.compute_distance(left_table, right_table, id_column, on)
 
@@ -273,7 +289,7 @@ class AutoFJTrainer(AutoFJAbstract):
         return result, precision_est
 
 class AutoFJPredictor(AutoFJAbstract):
-    def __init__(self, uoc, column_weights, blocker=None, n_jobs=-1, verbose=False, name=None):
+    def __init__(self, uoc, column_weights, negative_rule, blocker=None, n_jobs=-1, verbose=False, name=None):
         if blocker is None:
             self.blocker = AutoFJBlocker(n_jobs=n_jobs)
         else:
@@ -284,6 +300,7 @@ class AutoFJPredictor(AutoFJAbstract):
 
         self.uoc = uoc
         self.column_weights = column_weights
+        self.negative_rule = negative_rule
 
         self.cache_dir = TemporaryDirectory().name if name is None else f"tmp_{name}"
         self.jf_space = AutoFJJoinFunctionSpacePred(self.uoc, n_jobs=self.n_jobs, verbose=self.verbose, cache_dir=self.cache_dir)
@@ -295,7 +312,7 @@ class AutoFJPredictor(AutoFJAbstract):
                 self.candidate_thresholds[jf] = []
             if threshold not in self.candidate_thresholds[jf]:
                 self.candidate_thresholds[jf].append(threshold)
-        
+
     def keep_min_distance(self, LR_distance):
         # for each rid only keep lid with the smallest distance
         LR_small = {}
@@ -404,7 +421,13 @@ class AutoFJPredictor(AutoFJAbstract):
 
         self.LR_joins = [(l, r) for r, l in self.running_LR_joins.items()]
 
-    def compute_distance(self, left_table: pd.DataFrame, right_table: pd.DataFrame, id_column: str, on: Optional[Union[str, List[str]]] = None):
+    def compute_distance(self, 
+        left_table: pd.DataFrame, 
+        right_table: pd.DataFrame, 
+        id_column: str, 
+        on: Optional[Union[str, List[str]]] = None,
+        **kwargs
+    ):
         left = left_table.copy(deep=True)
         right = right_table.copy(deep=True)
 
@@ -419,15 +442,12 @@ class AutoFJPredictor(AutoFJAbstract):
         # get names of columns to be joined
         if on is None:
             on = sorted(list(set(left.columns).intersection(right.columns)))
-        elif isinstance(on, str):
-            on = [on + "autofj_id"]
-        elif isinstance(on, list):
-            on = on + ["autofj_id"]
 
         left = left[on]
         right = right[on]
 
-        LL_blocked, LR_blocked = self.preprocessing(left, right)
+        LL_blocked, LR_blocked = self.preprocessing(left, right, pretrained_nr=self.negative_rule)
+
         LL_distance, LR_distance = self.jf_space.compute_distance(left, right, LL_blocked, LR_blocked)
         return LL_blocked, LR_blocked, LL_distance, LR_distance
 
@@ -436,7 +456,14 @@ class AutoFJPredictor(AutoFJAbstract):
         right_table: pd.DataFrame, 
         id_column: str, 
         on: Optional[Union[str, List[str]]]=None, 
+        **kwargs
     ):
+        # Augment left column
+        l_aug = kwargs.get("left_aug") 
+        if l_aug is not None:
+            print(f"Augmenting left for learning Negative Rule with {len(l_aug)} entries")
+            left_table = pd.concat([left_table, l_aug]).drop_duplicates().reset_index(drop=True)
+
         # Transform Union of Configs
         _, _, self.LL_distance, self.LR_distance = self.compute_distance(left_table, right_table, id_column, on)
         self.LL_distance = self.get_weighted_distance(self.LL_distance, self.column_weights)
@@ -459,16 +486,6 @@ class AutoFJPredictor(AutoFJAbstract):
 
         for config in self.uoc:
             self.update_selection(config)
-
-            
-            # Where the magic happens
-            # uoc_df = pd.DataFrame(self.uoc, columns=["join_function", "threshold"])
-            # for jf, distance_df in self.LR_distance.items():
-            #     threshold = uoc_df[uoc_df["join_function"] == jf]["threshold"].values
-            #     valid = distance_df["distance"].apply(lambda x: any(x <= threshold))
-            #     LR_joins = distance_df[valid]
-            #     left_idx.extend(LR_joins["autofj_id_l"].values)
-            #     right_idx.extend(LR_joins["autofj_id_r"].values)
 
         if self.LR_joins is None:
             print("Warning: The precision target cannot be achieved.",
@@ -566,11 +583,11 @@ class AutoFJ(ClassifierMixin, BaseEstimator):
             self.n_jobs, self.verbose,
             name=str(dataHash)
         )
-        self.selected_column_weights_ = None
-        self.selected_join_config_ = None
-        self.train_results_, self.precision_est_ = trainer.join(left, right, kwargs.get('id_column'), kwargs.get('on'))
+  
+        self.train_results_, self.precision_est_ = trainer.join(left, right, kwargs.get('id_column'), kwargs.get('on'), left_aug=kwargs.get("left_aug"))
         self.selected_join_config_ = trainer.selected_join_configs
         self.selected_column_weights_ = trainer.selected_column_weights
+        self.negative_rule_ = trainer.nr
         return self
 
     def save_model(self, model_file: str):
@@ -586,13 +603,14 @@ class AutoFJ(ClassifierMixin, BaseEstimator):
         predictor = AutoFJPredictor(
             self.selected_join_config_, 
             self.selected_column_weights_, 
+            self.negative_rule_,
             self.blocker, 
             self.n_jobs, 
             self.verbose,
             name=str(dataHash)
         )
         left, right = X
-        return predictor.join(left, right, kwargs.get('id_column'), kwargs.get('on'))
+        return predictor.join(left, right, kwargs.get('id_column'), kwargs.get('on'), left_aug=kwargs.get("left_aug"))
 
     def evaluate(self, y_true: pd.DataFrame, y_pred: pd.DataFrame, **kwargs):
         gt_joins = y_true.astype(str)[["id_l", "id_r"]].values
@@ -767,7 +785,7 @@ class GridSearchCV(sklearn_ms.GridSearchCV):
                         "splits, got {}".format(n_splits, len(out) // n_candidates)
                     )
 
-                _warn_about_fit_failures(out, self.error_score)
+                _warn_or_raise_about_fit_failures(out, self.error_score)
 
                 # For callable self.scoring, the return type is only know after
                 # calling. If the return type is a dictionary, the error scores

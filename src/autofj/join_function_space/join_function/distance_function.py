@@ -18,7 +18,7 @@ from dateutil.parser import parse as date_parse
 # tokenizer = BartTokenizer.from_pretrained("facebook/bart-base")
 # model = BartModel.from_pretrained("facebook/bart-base").to(device)
 
-import spacy_universal_sentence_encoder
+#import spacy_universal_sentence_encoder
 
 """Distance Functions"""
 def jaccardDistance(x, y, w=None):
@@ -219,8 +219,8 @@ class DistanceFunction(object):
             self.func = containDiceDistance
         elif method == "embedDistance":
             self.func = embedDistance
-            self.embedding = spacy_universal_sentence_encoder.load_model('xx_use_lg')
-            #self.embedding = spacy.load("en_core_web_lg")
+            #self.embedding = spacy_universal_sentence_encoder.load_model('xx_use_lg')
+            self.embedding = spacy.load("en_core_web_lg")
 
         # BERT/BART
         # elif method == "embed_BART-Large":

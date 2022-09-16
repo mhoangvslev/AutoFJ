@@ -11,13 +11,6 @@ from qwikidata.sparql import return_sparql_query_results
 from tqdm import tqdm
 import re
 
-from string import punctuation
-import spacy
-
-import spacy_universal_sentence_encoder
-nlp = spacy_universal_sentence_encoder.load_model('xx_use_lg')
-
-
 @click.group()
 def cli():
     pass

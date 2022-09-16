@@ -12,6 +12,12 @@ class NegativeRule(object):
         self.id_column = id_column
         self.negative_rules = set()
 
+    @staticmethod
+    def load_pretrained_rules(nr, left, right, id_column):
+        negative_rule = NegativeRule(left, right, id_column)
+        negative_rule.negative_rules = nr.negative_rules
+        return negative_rule
+
     def get_tokens_diff(self, l_tokens, r_tokens):
         # get difference of l_token set and r_token set
         l_diff = [l - r for l, r in zip(l_tokens, r_tokens)]
@@ -84,6 +90,9 @@ class NegativeRule(object):
 
     def apply(self, LR_blocked):
         """Apply opposite rule on LR blocked"""
+
+        print(f"Applying {len(self.negative_rules)} negative rules...")
+
         # merge LR with left, right
         LR = self._merge(self.left, self.right, LR_blocked)
 

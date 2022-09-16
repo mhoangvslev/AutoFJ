@@ -79,28 +79,110 @@ def predict(modelname, dataset, id, on, outdir):
 
     print(test_results)
 
-
 @cli.command()
-@click.argument("left", type=click.Path(exists=True, file_okay=True, dir_okay=False))
-@click.argument("right", type=click.Path(exists=True, file_okay=True, dir_okay=False))
-@click.argument("gt", type=click.Path(exists=True, file_okay=True, dir_okay=False))
+@click.argument("input-dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.argument("result-dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.argument("dataset", type=click.STRING)
-@click.argument("bm_pipeline", type=click.STRING)
-@click.argument("attempt", type=click.STRING)
-def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt):
+@click.option("--augqty", type=click.FLOAT, default=1.0)
+@click.option("--verbose", type=click.BOOL, default=False)
+@click.option("--jfs", type=click.STRING, default="autofj_sm")
+@click.option("--name", type=click.STRING, default="default")
+def train(input_dir, result_dir, dataset, augqty, verbose, jfs, name):
 
     tmpDirs = glob("tmp*", recursive=False)
     for tmpDir in tmpDirs: 
         shutil.rmtree(tmpDir)
         
-    data_l = pd.read_csv(left)
-    data_r = pd.read_csv(right)
-    data_gt = pd.read_csv(gt)
+    data_l = pd.read_csv(os.path.join(input_dir, "left.csv"))
+    data_r = pd.read_csv(os.path.join(input_dir, "right.csv"))
+    data_gt = pd.read_csv(os.path.join(input_dir, "gt.csv"))
 
     X, y = (data_l, data_r), data_gt
 
-    model = AutoFJ(precision_target=0.9, verbose=False, join_function_space="autofj_sm")
+    model = AutoFJ(precision_target=0.9, verbose=verbose, join_function_space=jfs)
+
+    results = {
+        "train_times": [],
+        "test_times": [],
+        "train_scores": [],
+        "test_scores": [],
+        "train_precision_est": [],
+        "gt_size_train": [],
+        "l_size_train": [],
+        "r_size_train": [],
+        "gt_size_test": [],
+        "l_size_test": [],
+        "r_size_test": [],
+    }
+
+    (X_train, y_train), (X_test, y_test) = train_test_split(X, y, train_size=1, shuffle=True, stable_left=True)
+            
+    augPath = os.path.join(input_dir, "left_aug.csv")
+    if os.path.exists(augPath):
+        print("Augmenting left column...")
+        X_aug = pd.read_csv(augPath)
+        X_aug = X_aug.head(int(augqty * len(X_aug)))
+        
+    X_test, y_test = X, y
+
+    trainBegin = time()
+    model.fit(X_train, id_column="id", left_aug=X_aug)
+    trainEnd = time()
+    results["train_scores"].append(model.evaluate(y_train, model.train_results_))
+    results["train_times"].append(trainEnd-trainBegin)
+            
+    testBegin = time()
+    y_pred = model.predict(X_test, id_column="id", left_aug=X_aug)
+    testEnd = time()
+    results["test_scores"].append(model.evaluate(y_test, y_pred))
+    results["test_times"].append(testEnd-testBegin)
+            
+    results["gt_size_test"].append(len(y_test)) 
+    results["gt_size_train"].append(len(y_train))
+    results["l_size_test"].append(len(X_test[0]))
+    results["l_size_train"].append(len(X_train[0]))
+    results["r_size_test"].append(len(X_test[1]))
+    results["r_size_train"].append(len(X_train[1]))
+    results["train_precision_est"].append(model.precision_est_)
+
+    filePath = os.path.join(result_dir, dataset)
+    pathlib.Path(filePath).mkdir(parents=True, exist_ok=True)
+    
+    print(results)
+    summary = pd.DataFrame(results, index=None)
+    summary.drop(['train_scores', 'test_scores'], axis=1, inplace=True)
+    train_df = pd.DataFrame(results["train_scores"])
+    train_df.columns = [ f"{col}_train" for col in train_df.columns ]
+    test_df = pd.DataFrame(results["test_scores"])
+    test_df.columns = [ f"{col}_test" for col in test_df.columns ]
+    summary = pd.concat([summary, train_df, test_df], axis=1)
+
+    summary.to_csv(os.path.join(filePath, f"summary.csv"), index=False)
+    model.save_model(os.path.join(filePath, f"{dataset}_{name}_model.pkl"))
+
+
+@cli.command()
+@click.argument("input-dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
+@click.argument("result-dir", type=click.Path(exists=True, file_okay=False, dir_okay=True))
+@click.argument("dataset", type=click.STRING)
+@click.argument("bm_pipeline", type=click.STRING)
+@click.argument("attempt", type=click.STRING)
+@click.option("--verbose", type=click.BOOL, default=False)
+@click.option("--jfs", type=click.STRING, default="autofj_sm")
+def run_benchmark(input_dir, result_dir, dataset, bm_pipeline, attempt, verbose, jfs):
+
+    tmpDirs = glob("tmp*", recursive=False)
+    for tmpDir in tmpDirs: 
+        shutil.rmtree(tmpDir)
+        
+    data_l = pd.read_csv(os.path.join(input_dir, "left.csv"))
+    data_r = pd.read_csv(os.path.join(input_dir, "right.csv"))
+    data_gt = pd.read_csv(os.path.join(input_dir, "gt.csv"))
+
+    outDir = os.path.join(result_dir, dataset, attempt)
+    pathlib.Path(outDir).mkdir(parents=True, exist_ok=True)
+
+    X, y = (data_l, data_r), data_gt
 
     results = {
         "train_times": [],
@@ -126,29 +208,27 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
         
         results["fold"] = np.arange(1, cv+1, step=1).tolist()
             
+        cv_itr = 0    
         for train, test in tqdm(kfold.split(X, y, stable_left=stable_left), total=cv, unit="fold"):
             X_train, y_train = train
             X_test, y_test = test
+            cv_itr += 1
 
-            homeDir = os.path.dirname(os.path.realpath(left))
-            augPath = os.path.join(homeDir, "left_aug.csv")
-            if os.path.exists(augPath):
-                print("Augmenting left column...")
-                X_aug = pd.read_csv(augPath)
-                X_train_l_org, X_train_r = X_train
-                X_train_l = X_train_l_org.append(X_aug[X_train_l_org.columns])
-                X_train = (X_train_l, X_train_r)
-                print(f"X_train (original): {len(X_train_l_org)}; left_aug: {len(X_aug)}; X_train (augmented): {len(X_train_l)}")
+            augPath = os.path.join(input_dir, "left_aug.csv")
+            X_aug = pd.read_csv(augPath) if os.path.exists(augPath) else None
+
+            model = AutoFJ(precision_target=0.9, verbose=verbose, join_function_space=jfs)
 
             trainBegin = time()
-            model.fit(X_train, y_train, id_column=id_column, on=on)
+            model.fit(X_train, y_train, id_column=id_column, on=on, left_aug=X_aug)
             trainEnd = time()
+            model.save_model(os.path.join(outDir, f"{dataset}_{bm_pipeline}_{cv_itr}_model.pkl"))
 
             results["train_times"].append(trainEnd-trainBegin)
             results["train_scores"].append(model.evaluate(y_train, model.train_results_))
 
             testBegin = time()
-            y_pred = model.predict(X_test, id_column=id_column, on=on)
+            y_pred = model.predict(X_test, id_column=id_column, on=on, left_aug=X_aug)
             testEnd = time()
 
             results["test_times"].append(testEnd-testBegin)
@@ -170,26 +250,21 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
         for splitRate in splitRates:
             (X_train, y_train), (X_test, y_test) = train_test_split(X, y, train_size=splitRate, shuffle=True, stable_left=True)
             
-            homeDir = os.path.dirname(os.path.realpath(left))
-            augPath = os.path.join(homeDir, "left_aug.csv")
-            if os.path.exists(augPath):
-                print("Augmenting left column...")
-                X_aug = pd.read_csv(augPath)
-                X_train_l_org, X_train_r = X_train
-                X_train_l = X_train_l_org.append(X_aug[X_train_l_org.columns])
-                X_train = (X_train_l, X_train_r)
-                print(f"X_train (original): {len(X_train_l_org)}; left_aug: {len(X_aug)}; X_train (augmented): {len(X_train_l)}")
-            
+            augPath = os.path.join(input_dir, "left_aug.csv")
+            X_aug = pd.read_csv(augPath) if os.path.exists(augPath) else None
+
             X_test, y_test = X, y
+            model = AutoFJ(precision_target=0.9, verbose=verbose, join_function_space=jfs)
 
             trainBegin = time()
-            model.fit(X_train, id_column="id")
+            model.fit(X_train, id_column="id", left_aug=X_aug)
             trainEnd = time()
             results["train_scores"].append(model.evaluate(y_train, model.train_results_))
             results["train_times"].append(trainEnd-trainBegin)
+            model.save_model(os.path.join(outDir, f"{dataset}_{bm_pipeline}_{splitRate}_model.pkl"))
             
             testBegin = time()
-            y_pred = model.predict(X_test, id_column="id")
+            y_pred = model.predict(X_test, id_column="id", left_aug=X_aug)
             testEnd = time()
             results["test_scores"].append(model.evaluate(y_test, y_pred))
             results["test_times"].append(testEnd-testBegin)
@@ -204,33 +279,30 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
     
     elif bm_pipeline == "complete-2":
 
-        augQtys = [ 0.30, 0.50, 0.70, 0.90, 1 ]
+        augQtys = [0, 0.70, 1 ]
         results["l_aug_size"] = augQtys
 
         for augQty in augQtys:
             (X_train, y_train), (X_test, y_test) = train_test_split(X, y, train_size=1, shuffle=True, stable_left=True)
             
-            homeDir = os.path.dirname(os.path.realpath(left))
-            augPath = os.path.join(homeDir, "left_aug.csv")
+            augPath = os.path.join(input_dir, "left_aug.csv")
+            X_aug = None
             if os.path.exists(augPath):
-                print("Augmenting left column...")
                 X_aug = pd.read_csv(augPath)
-                X_aug = X_aug.head(augQty * len(X_aug))
-                X_train_l_org, X_train_r = X_train
-                X_train_l = X_train_l_org.append(X_aug[X_train_l_org.columns])
-                X_train = (X_train_l, X_train_r)
-                print(f"X_train (original): {len(X_train_l_org)}; left_aug: {len(X_aug)}; X_train (augmented): {len(X_train_l)}")
-            
+                X_aug = X_aug.head(int(augQty * len(X_aug)))
+                
             X_test, y_test = X, y
+            model = AutoFJ(precision_target=0.9, verbose=verbose, join_function_space=jfs)
 
             trainBegin = time()
-            model.fit(X_train, id_column="id")
+            model.fit(X_train, id_column="id", left_aug=X_aug)
             trainEnd = time()
             results["train_scores"].append(model.evaluate(y_train, model.train_results_))
             results["train_times"].append(trainEnd-trainBegin)
+            model.save_model(os.path.join(outDir, f"{dataset}_{bm_pipeline}_{augQty}_model.pkl"))
             
             testBegin = time()
-            y_pred = model.predict(X_test, id_column="id")
+            y_pred = model.predict(X_test, id_column="id", left_aug=X_aug)
             testEnd = time()
             results["test_scores"].append(model.evaluate(y_test, y_pred))
             results["test_times"].append(testEnd-testBegin)
@@ -258,26 +330,21 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
 
             (X_train, y_train), (X_test, y_test) = train_test_split(X, y, train_size=1, shuffle=True, stable_left=True)
             
-            homeDir = os.path.dirname(os.path.realpath(left))
-            augPath = os.path.join(homeDir, "left_aug.csv")
-            if os.path.exists(augPath):
-                print("Augmenting left column...")
-                X_aug = pd.read_csv(augPath)
-                X_train_l_org, X_train_r = X_train
-                X_train_l = X_train_l_org.append(X_aug[X_train_l_org.columns])
-                X_train = (X_train_l, X_train_r)
-                print(f"X_train (original): {len(X_train_l_org)}; left_aug: {len(X_aug)}; X_train (augmented): {len(X_train_l)}")
-            
+            augPath = os.path.join(input_dir, "left_aug.csv")
+            X_aug = pd.read_csv(augPath) if os.path.exists(augPath) else None
+                
             X_test, y_test = X, y
+            model = AutoFJ(precision_target=0.9, verbose=verbose, join_function_space=jfs)
 
             trainBegin = time()
-            model.fit(X_train, id_column="id")
+            model.fit(X_train, id_column="id", left_aug=X_aug)
             trainEnd = time()
             results["train_scores"].append(model.evaluate(y_train, model.train_results_))
             results["train_times"].append(trainEnd-trainBegin)
-            
+            model.save_model(os.path.join(outDir, f"{dataset}_{bm_pipeline}_{blocker_name}_model.pkl"))
+
             testBegin = time()
-            y_pred = model.predict(X_test, id_column="id")
+            y_pred = model.predict(X_test, id_column="id", left_aug=X_aug)
             testEnd = time()
             results["test_scores"].append(model.evaluate(y_test, y_pred))
             results["test_times"].append(testEnd-testBegin)
@@ -292,9 +359,6 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
 
     else: 
         raise RuntimeError(f"Unknown pipeline '{bm_pipeline}'")
-
-    filePath = os.path.join(result_dir, dataset, attempt)
-    pathlib.Path(filePath).mkdir(parents=True, exist_ok=True)
     
     print(results)
     summary = pd.DataFrame(results, index=None)
@@ -305,8 +369,7 @@ def autofj_benchmark(left, right, gt, result_dir, dataset, bm_pipeline, attempt)
     test_df.columns = [ f"{col}_test" for col in test_df.columns ]
     summary = pd.concat([summary, train_df, test_df], axis=1)
 
-    summary.to_csv(os.path.join(filePath, f"summary_{bm_pipeline}.csv"), index=False)
-    model.save_model(os.path.join(filePath, f"{dataset}_{bm_pipeline}_model.pkl"))
+    summary.to_csv(os.path.join(outDir, f"summary_{bm_pipeline}.csv"), index=False)
 
 if __name__ == '__main__':
     cli()

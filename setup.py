@@ -35,7 +35,7 @@ setuptools.setup(
         'scikit-learn',
         'Click',
         'qwikidata',
-        'spacy-universal-sentence-encoder[multi]',
+        #'spacy-universal-sentence-encoder[multi]',
         'langdetect',
         'gdown'
     ],
